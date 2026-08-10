@@ -1,0 +1,2282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Correct Score Dutcher</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;900&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --gold: #F5C842;
+  --green: #22c55e;
+  --red: #ef4444;
+  --bg: #0a0c10;
+  --card: #111318;
+  --card2: #181b22;
+  --border: #23272f;
+  --text: #f0f2f7;
+  --muted: #6b7280;
+  --step1: #3b82f6;
+  --step2: #8b5cf6;
+  --step3: #22c55e;
+  --step4: #f97316;
+  --accent: #f97316;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Barlow', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  padding-bottom: 110px;
+}
+.header {
+  background: linear-gradient(160deg, #0d0f15 0%, #0a1008 100%);
+  border-bottom: 2px solid var(--green);
+  padding: 16px 16px 12px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+}
+.header-title {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 1.8rem;
+  font-weight: 900;
+  color: var(--green);
+  letter-spacing: 0.05em;
+  line-height: 1;
+}
+.header-sub { font-size: 0.72rem; color: var(--muted); margin-top: 2px; }
+.header-badge {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  background: rgba(34,197,94,0.12);
+  border: 1px solid rgba(34,197,94,0.3);
+  color: var(--green);
+  padding: 4px 10px;
+  border-radius: 99px;
+}
+.step-card {
+  margin: 10px 12px;
+  border-radius: 18px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+}
+.step-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  cursor: pointer;
+  user-select: none;
+}
+.step-num {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 900;
+  font-size: 1.4rem;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.step-info { flex: 1; }
+.step-title {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 700;
+  font-size: 1rem;
+  letter-spacing: 0.04em;
+}
+.step-desc { font-size: 0.75rem; color: var(--muted); margin-top: 1px; }
+.step-chevron { color: var(--muted); font-size: 0.9rem; transition: transform 0.2s; }
+.step-chevron.open { transform: rotate(180deg); }
+.step-body { padding: 0 16px 16px; display: none; }
+.step-body.open { display: block; }
+.s1 .step-header { background: rgba(59,130,246,0.07); }
+.s1 .step-num { background: rgba(59,130,246,0.15); color: var(--step1); }
+.s1 { border-color: rgba(59,130,246,0.25); }
+.s2 .step-header { background: rgba(139,92,246,0.07); }
+.s2 .step-num { background: rgba(139,92,246,0.15); color: var(--step2); }
+.s2 { border-color: rgba(139,92,246,0.25); }
+.s3 .step-header { background: rgba(34,197,94,0.07); }
+.s3 .step-num { background: rgba(34,197,94,0.15); color: var(--step3); }
+.s3 { border-color: rgba(34,197,94,0.25); }
+.s4 .step-header { background: rgba(249,115,22,0.07); }
+.s4 .step-num { background: rgba(249,115,22,0.15); color: var(--step4); }
+.s4 { border-color: rgba(249,115,22,0.25); }
+.prompt-label {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: var(--muted);
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+.prompt-wrap { position: relative; margin-bottom: 10px; }
+.prompt-box {
+  background: var(--card2);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 13px 13px 40px 13px;
+  font-size: 0.78rem;
+  color: #c9d1e0;
+  line-height: 1.6;
+  white-space: pre-wrap;
+  max-height: 260px;
+  overflow-y: auto;
+}
+.prompt-copy-btn {
+  position: sticky;
+  bottom: 0;
+  display: block;
+  width: 100%;
+  margin-top: -38px;
+  padding: 8px;
+  background: rgba(59,130,246,0.85);
+  backdrop-filter: blur(4px);
+  border: none;
+  border-radius: 0 0 11px 11px;
+  color: #fff;
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 700;
+  font-size: 0.82rem;
+  letter-spacing: 0.07em;
+  cursor: pointer;
+  transition: background 0.15s;
+  text-align: center;
+}
+.prompt-copy-btn:active { background: rgba(22,163,74,0.9); transform: scale(0.98); }
+.s2 .prompt-copy-btn { background: rgba(139,92,246,0.85); }
+.filter-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+.filter-row.single { grid-template-columns: 1fr; }
+.filter-group label {
+  display: block;
+  font-size: 0.7rem;
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+.filter-group select, .filter-group input[type="text"], .filter-group input[type="number"] {
+  width: 100%;
+  background: var(--card2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  color: var(--text);
+  padding: 9px 11px;
+  font-family: 'Barlow', sans-serif;
+  font-size: 0.88rem;
+  outline: none;
+}
+.filter-group input[type="text"]::placeholder { color: var(--muted); }
+.btn {
+  width: 100%;
+  padding: 13px;
+  border-radius: 13px;
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 700;
+  font-size: 1rem;
+  letter-spacing: 0.08em;
+  border: none;
+  cursor: pointer;
+  transition: all 0.15s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+.btn:active { transform: scale(0.97); }
+.btn-blue { background: var(--step1); color: #fff; }
+.btn-purple { background: var(--step2); color: #fff; }
+.btn-green { background: #16a34a; color: #fff; }
+.btn-orange { background: var(--step4); color: #000; }
+.btn-gold { background: var(--gold); color: #000; font-weight: 800; }
+.btn-sm {
+  padding: 7px 14px;
+  border-radius: 9px;
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 700;
+  font-size: 0.85rem;
+  letter-spacing: 0.05em;
+  border: none;
+  cursor: pointer;
+}
+textarea {
+  width: 100%;
+  background: var(--card2);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  color: var(--text);
+  padding: 12px;
+  font-family: 'Barlow', sans-serif;
+  font-size: 0.9rem;
+  outline: none;
+  resize: vertical;
+  margin-bottom: 10px;
+  transition: border-color 0.15s;
+}
+textarea:focus { border-color: var(--step3); }
+.divider { height: 1px; background: var(--border); margin: 12px 0; }
+.tip-box {
+  font-size: 0.75rem;
+  color: var(--muted);
+  line-height: 1.6;
+  padding: 10px 12px;
+  background: rgba(255,255,255,0.02);
+  border-radius: 10px;
+  border: 1px solid var(--border);
+}
+.settings-card {
+  margin: 10px 12px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 14px 16px;
+}
+.settings-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.setting-label {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: var(--muted);
+  text-transform: uppercase;
+  margin-bottom: 5px;
+}
+.setting-input {
+  width: 100%;
+  background: var(--card2);
+  border: 1px solid var(--border);
+  border-radius: 11px;
+  color: var(--text);
+  padding: 10px;
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 1.4rem;
+  font-weight: 700;
+  text-align: center;
+  outline: none;
+}
+.setting-input:focus { border-color: var(--gold); }
+.scores-card {
+  margin: 10px 12px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 14px 16px;
+}
+.scores-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+.scores-title { font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 1.1rem; }
+.score-count { color: var(--green); }
+.score-card {
+  background: var(--card2);
+  border: 1px solid var(--border);
+  border-radius: 13px;
+  padding: 11px 13px;
+  margin-bottom: 7px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: border-color 0.15s;
+}
+.score-label {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 900;
+  font-size: 1.3rem;
+  color: var(--text);
+  letter-spacing: 0.03em;
+}
+.score-meta { font-size: 0.8rem; color: var(--muted); margin-top: 2px; }
+.score-priority {
+  font-size: 0.72rem;
+  color: var(--muted);
+  margin-top: 2px;
+  font-family: 'Barlow Condensed', sans-serif;
+}
+.remove-btn {
+  background: none;
+  border: none;
+  color: #374151;
+  font-size: 1.1rem;
+  cursor: pointer;
+  padding: 5px 7px;
+  border-radius: 7px;
+  flex-shrink: 0;
+}
+.empty-state { text-align: center; color: var(--muted); padding: 28px; font-size: 0.88rem; }
+.checklist-card { margin: 10px 12px; background: var(--card); border: 1px solid rgba(245,200,66,0.2); border-radius: 18px; overflow: hidden; }
+.checklist-header { display: flex; align-items: center; gap: 12px; padding: 14px 16px; cursor: pointer; user-select: none; background: rgba(245,200,66,0.05); }
+.checklist-title { font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 1rem; letter-spacing: 0.04em; flex: 1; }
+.checklist-badge { font-family: 'Barlow Condensed', sans-serif; font-size: 0.72rem; font-weight: 700; padding: 3px 9px; border-radius: 99px; background: rgba(245,200,66,0.12); border: 1px solid rgba(245,200,66,0.3); color: var(--gold); letter-spacing: 0.06em; }
+.checklist-body { padding: 0 16px 16px; display: none; }
+.checklist-body.open { display: block; }
+.checklist-section-title { font-family: 'Barlow Condensed', sans-serif; font-size: 0.7rem; font-weight: 700; letter-spacing: 0.1em; color: var(--muted); text-transform: uppercase; margin: 14px 0 7px; padding-bottom: 4px; border-bottom: 1px solid var(--border); }
+.check-item { display: flex; align-items: flex-start; gap: 10px; padding: 8px 0; border-bottom: 1px solid rgba(35,39,47,0.5); cursor: pointer; }
+.check-item:last-child { border-bottom: none; }
+.check-box { width: 20px; height: 20px; border-radius: 6px; border: 2px solid var(--border); flex-shrink: 0; display: flex; align-items: center; justify-content: center; margin-top: 1px; transition: all 0.15s; font-size: 0.75rem; }
+.check-box.checked { background: var(--green); border-color: var(--green); color: #000; }
+.check-text { font-size: 0.82rem; line-height: 1.45; flex: 1; }
+.check-text strong { color: var(--text); font-weight: 600; }
+.check-text .sub { font-size: 0.72rem; color: var(--muted); margin-top: 1px; display: block; }
+.checklist-progress { height: 4px; background: var(--border); border-radius: 99px; margin-bottom: 6px; overflow: hidden; }
+.checklist-progress-bar { height: 100%; background: var(--green); border-radius: 99px; transition: width 0.3s; width: 0%; }
+.checklist-score { font-family: 'Barlow Condensed', sans-serif; font-size: 0.78rem; color: var(--muted); margin-bottom: 12px; }
+.reset-checks { font-family: 'Barlow Condensed', sans-serif; font-size: 0.75rem; font-weight: 700; color: var(--muted); background: none; border: 1px solid var(--border); border-radius: 8px; padding: 5px 12px; cursor: pointer; letter-spacing: 0.06em; margin-top: 10px; width: 100%; }
+.tier-row { display: flex; align-items: center; gap: 8px; padding: 5px 0; font-size: 0.8rem; border-bottom: 1px solid rgba(35,39,47,0.5); }
+.tier-row:last-child { border-bottom: none; }
+.tier-badge { font-family: 'Barlow Condensed', sans-serif; font-size: 0.65rem; font-weight: 700; padding: 2px 7px; border-radius: 99px; letter-spacing: 0.05em; flex-shrink: 0; }
+.tier-1 { background: rgba(34,197,94,0.15); color: var(--green); border: 1px solid rgba(34,197,94,0.3); }
+.tier-2 { background: rgba(245,200,66,0.12); color: var(--gold); border: 1px solid rgba(245,200,66,0.3); }
+.tier-3 { background: rgba(107,114,128,0.15); color: var(--muted); border: 1px solid rgba(107,114,128,0.25); }
+.alert-row { display: flex; justify-content: space-between; align-items: center; padding: 7px 10px; background: var(--card2); border-radius: 9px; margin-bottom: 5px; font-size: 0.8rem; }
+.alert-time { font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 0.9rem; color: var(--gold); }
+.alert-action { font-size: 0.75rem; color: var(--muted); max-width: 65%; text-align: right; }
+.results-card {
+  margin: 10px 12px;
+  background: var(--card);
+  border: 1px solid rgba(34,197,94,0.25);
+  border-radius: 18px;
+  padding: 16px;
+  display: none;
+}
+.results-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 10px; }
+.stat-box { background: var(--card2); border: 1px solid var(--border); border-radius: 11px; padding: 10px 12px; }
+.stat-label { font-size: 0.7rem; color: var(--muted); font-family: 'Barlow Condensed', sans-serif; letter-spacing: 0.08em; text-transform: uppercase; }
+.stat-val { font-family: 'Barlow Condensed', sans-serif; font-size: 1.4rem; font-weight: 900; margin-top: 2px; }
+.profit-banner {
+  background: rgba(34,197,94,0.1);
+  border: 1px solid rgba(34,197,94,0.3);
+  border-radius: 13px;
+  padding: 12px 16px;
+  margin-bottom: 12px;
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 1.8rem;
+  font-weight: 900;
+  color: var(--green);
+}
+.profit-sub { font-family:'Barlow',sans-serif; font-size:0.72rem; font-weight:500; color:var(--muted); letter-spacing:0; }
+.stake-row {
+  background: var(--card2);
+  border: 1px solid var(--border);
+  border-radius: 11px;
+  padding: 11px 13px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+.stake-name { font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 1.1rem; letter-spacing: 0.03em; }
+.stake-odds { font-size: 0.8rem; color: var(--muted); margin-top: 1px; }
+.stake-amount { color: var(--green); font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 1.05rem; }
+.sticky-calc {
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  padding: 10px 12px 14px;
+  background: linear-gradient(to top, var(--bg) 75%, transparent);
+  z-index: 50;
+}
+.flash-msg {
+  font-size: 0.78rem;
+  padding: 6px 12px;
+  border-radius: 99px;
+  margin-top: 8px;
+  display: inline-block;
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 600;
+}
+.flash-ok { background: #14532d; color: #4ade80; }
+.flash-err { background: #4c1d1d; color: #f87171; }
+.priority-badge {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 0.65rem;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 99px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.pri-high { background: rgba(34,197,94,0.15); color: var(--green); border: 1px solid rgba(34,197,94,0.3); }
+.pri-med { background: rgba(245,200,66,0.12); color: var(--gold); border: 1px solid rgba(245,200,66,0.3); }
+.pri-low { background: rgba(107,114,128,0.15); color: var(--muted); border: 1px solid rgba(107,114,128,0.25); }
+.match-info-bar {
+  background: rgba(34,197,94,0.06);
+  border: 1px solid rgba(34,197,94,0.15);
+  border-radius: 12px;
+  padding: 10px 13px;
+  margin-bottom: 12px;
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 0.9rem;
+  color: var(--muted);
+  display: none;
+}
+.match-info-bar.visible { display: block; }
+.match-info-teams {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 4px;
+}
+.match-info-odds {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  font-size: 0.78rem;
+}
+.odds-pill {
+  background: var(--card2);
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  padding: 2px 8px;
+  color: var(--gold);
+  font-weight: 700;
+}
+/* ===== v2 additions ===== */
+.mini-pill { cursor:pointer; border-radius:7px; padding:2px 8px; font-family:'Barlow Condensed',sans-serif; font-weight:700; font-size:0.82rem; border:1px solid var(--border); background:var(--card); }
+.edge-pos { color:var(--green); border-color:rgba(34,197,94,0.35); background:rgba(34,197,94,0.08); }
+.edge-neg { color:var(--red); border-color:rgba(239,68,68,0.3); background:rgba(239,68,68,0.06); }
+.skew-pill { color:#a78bfa; border-color:rgba(167,139,250,0.35); background:rgba(167,139,250,0.08); }
+.timing-table { width:100%; border-collapse:collapse; font-size:0.75rem; font-family:'Barlow Condensed',sans-serif; }
+.timing-table th { color:var(--muted); font-weight:700; padding:4px 3px; border-bottom:1px solid var(--border); font-size:0.68rem; letter-spacing:0.04em; }
+.timing-table td { padding:5px 3px; text-align:center; border-bottom:1px solid rgba(35,39,47,0.5); }
+.timing-table td:first-child { text-align:left; color:var(--muted); }
+.seg { display:flex; border:1px solid var(--border); border-radius:11px; overflow:hidden; }
+.seg button { flex:1; background:var(--card2); color:var(--muted); border:none; padding:10px 6px; font-family:'Barlow Condensed',sans-serif; font-weight:700; font-size:0.82rem; letter-spacing:0.04em; cursor:pointer; }
+.seg button.on { background:var(--step4); color:#000; }
+.roll-banner { background:rgba(249,115,22,0.08); border:1px solid rgba(249,115,22,0.3); border-radius:13px; padding:12px 16px; margin-bottom:10px; font-family:'Barlow Condensed',sans-serif; font-size:1.35rem; font-weight:900; color:var(--step4); }
+.warn-box { background:rgba(245,200,66,0.07); border-left:3px solid var(--gold); border-radius:0 10px 10px 0; padding:10px 12px; font-size:0.78rem; color:var(--gold); line-height:1.5; margin-top:10px; }
+.info-box { background:rgba(59,130,246,0.06); border-left:3px solid var(--step1); border-radius:0 10px 10px 0; padding:10px 12px; font-size:0.78rem; color:var(--muted); line-height:1.5; margin-top:10px; }
+.dead-row { opacity:0.45; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div>
+    <div class="header-title">SCORE DUTCHER</div>
+    <div class="header-sub">Correct Score Dutching &amp; Trading · Powered by Claude.ai</div>
+  </div>
+  <div class="header-badge">⚽ v2</div>
+</div>
+
+<!-- API KEY CARD -->
+<div id="apiKeyCard" style="margin:10px 12px;background:var(--card);border:1px solid rgba(245,200,66,0.25);border-radius:18px;padding:14px 16px;">
+  <div style="font-family:'Barlow Condensed',sans-serif;font-size:0.7rem;font-weight:700;letter-spacing:0.1em;color:var(--gold);text-transform:uppercase;margin-bottom:6px;">🔑 Anthropic API Key</div>
+  <div style="display:flex;gap:8px;align-items:center;">
+    <input type="password" id="apiKeyInput" placeholder="sk-ant-..." style="flex:1;background:var(--card2);border:1px solid var(--border);border-radius:10px;color:var(--text);padding:9px 11px;font-family:'Barlow',sans-serif;font-size:0.88rem;outline:none;" oninput="updateApiKeyStatus()">
+    <button onclick="saveApiKey()" style="padding:9px 14px;border-radius:10px;font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:0.85rem;border:none;cursor:pointer;background:var(--gold);color:#000;white-space:nowrap;">SAVE</button>
+  </div>
+  <div id="apiKeyStatus" style="font-size:0.72rem;margin-top:6px;font-family:'Barlow Condensed',sans-serif;"></div>
+  <div style="font-size:0.7rem;color:var(--muted);margin-top:4px;">Saved locally on your device — never shared. Required for scanning &amp; timing research.</div>
+
+  <!-- BACKUP -->
+  <div style="border-top:1px solid var(--border);margin-top:12px;padding-top:11px;">
+    <div style="font-family:'Barlow Condensed',sans-serif;font-size:0.7rem;font-weight:700;letter-spacing:0.1em;color:var(--muted);text-transform:uppercase;margin-bottom:7px;">💾 Backup — do this before any phone change</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+      <button onclick="exportBackup()" class="btn-sm" style="background:#1d4ed8;color:#fff;padding:9px;">⬇ EXPORT ALL</button>
+      <button onclick="document.getElementById('importFile').click()" class="btn-sm" style="background:var(--card2);color:var(--text);border:1px solid var(--border);padding:9px;">⬆ IMPORT</button>
+    </div>
+    <input type="file" id="importFile" accept="application/json,.json" style="display:none" onchange="importBackup(event)">
+    <div id="backupFlash" style="font-size:0.72rem;margin-top:6px;font-family:'Barlow Condensed',sans-serif;"></div>
+    <div style="font-size:0.68rem;color:var(--muted);margin-top:4px;">Exports your key, settings, current scores and saved results as one JSON file. Save it to Drive.</div>
+  </div>
+</div>
+
+<div class="checklist-card">
+  <div class="checklist-header" onclick="toggleChecklist()">
+    <div style="font-size:1.1rem;">✅</div>
+    <div class="checklist-title">PRE-MATCH CHECKLIST</div>
+    <div class="checklist-badge" id="checkBadge">0 / 10</div>
+    <div class="step-chevron" id="chevCheck">▼</div>
+  </div>
+  <div class="checklist-body" id="bodyCheck">
+    <div class="checklist-progress"><div class="checklist-progress-bar" id="checkProgress"></div></div>
+    <div class="checklist-score" id="checkScore">Tap each item to confirm — all 10 needed before placing</div>
+
+    <div class="checklist-section-title">📊 Match Odds Filters (InPlayGuru)</div>
+    <div class="check-item" onclick="toggleCheck(this)">
+      <div class="check-box">✓</div>
+      <div class="check-text"><strong>Favourite odds 1.40 – 2.20</strong><span class="sub">Clear favourite but not so short the correct score market is compressed</span></div>
+    </div>
+    <div class="check-item" onclick="toggleCheck(this)">
+      <div class="check-box">✓</div>
+      <div class="check-text"><strong>Over 2.5 goals odds 1.50 – 2.20</strong><span class="sub">Good goal expectation without needing too many scores covered</span></div>
+    </div>
+    <div class="check-item" onclick="toggleCheck(this)">
+      <div class="check-box">✓</div>
+      <div class="check-text"><strong>BTTS Yes odds 1.50 – 2.10</strong><span class="sub">Optional but improves score ranking accuracy if available</span></div>
+    </div>
+
+    <div class="checklist-section-title">🏆 League Check</div>
+    <div class="tier-row"><span class="tier-badge tier-1">TIER 1</span> Premier League, La Liga, Bundesliga, Serie A, Ligue 1</div>
+    <div class="tier-row"><span class="tier-badge tier-2">TIER 2</span> Championship, Segunda, Ligue 2, Serie B, 2.Bundesliga, Eredivisie, Primeira Liga</div>
+    <div class="tier-row"><span class="tier-badge tier-3">TIER 3</span> Scottish Prem, Belgian Pro, Süper Lig — use with caution</div>
+    <div class="check-item" onclick="toggleCheck(this)" style="margin-top:6px;">
+      <div class="check-box">✓</div>
+      <div class="check-text"><strong>League is Tier 1 or Tier 2</strong><span class="sub">Tier 1 preferred — better Betfair liquidity, tighter spreads, easier to get matched</span></div>
+    </div>
+
+    <div class="checklist-section-title">💧 Betfair Liquidity</div>
+    <div class="check-item" onclick="toggleCheck(this)">
+      <div class="check-box">✓</div>
+      <div class="check-text"><strong>Correct score market matched £500+</strong><span class="sub">Below £500 = thin market, hard to get bets matched at listed price</span></div>
+    </div>
+    <div class="check-item" onclick="toggleCheck(this)">
+      <div class="check-box">✓</div>
+      <div class="check-text"><strong>Top scorelines have £20+ available to back</strong><span class="sub">Ensure your stake can actually be matched on each selection</span></div>
+    </div>
+    <div class="check-item" onclick="toggleCheck(this)">
+      <div class="check-box">✓</div>
+      <div class="check-text"><strong>Lay side liquid enough to trade out</strong><span class="sub">You need to lay the current score in-play — check there's money on the lay side too</span></div>
+    </div>
+
+    <div class="checklist-section-title">🚫 Exclusions</div>
+    <div class="check-item" onclick="toggleCheck(this)">
+      <div class="check-box">✓</div>
+      <div class="check-text"><strong>Not a cup final or play-off</strong><span class="sub">High variance, neutral venue, extra time possibility distorts market</span></div>
+    </div>
+    <div class="check-item" onclick="toggleCheck(this)">
+      <div class="check-box">✓</div>
+      <div class="check-text"><strong>No major team news (key player out / suspended)</strong><span class="sub">Check Flashscore or BBC Sport — missing striker or keeper changes score distribution</span></div>
+    </div>
+    <div class="check-item" onclick="toggleCheck(this)">
+      <div class="check-box">✓</div>
+      <div class="check-text"><strong>Not a high-profile derby</strong><span class="sub">Derbies are unpredictable — odds can be misleading, markets move sharply</span></div>
+    </div>
+
+    <div class="checklist-section-title">🔔 InPlayGuru Alert Schedule</div>
+    <div class="alert-row"><span class="alert-time">24 hrs</span><span class="alert-action">Confirm fixture exists &amp; note it — no action needed yet</span></div>
+    <div class="alert-row"><span class="alert-time">6 hrs</span><span class="alert-action">Check team news on Flashscore / BBC Sport</span></div>
+    <div class="alert-row"><span class="alert-time">3 hrs</span><span class="alert-action">Enter match odds into Step 2, run goal-timing research, generate prompt</span></div>
+    <div class="alert-row"><span class="alert-time">1 hr</span><span class="alert-action">Screenshot Betfair correct score market → scan → check edge → calculate dutch → place bets</span></div>
+    <div class="alert-row"><span class="alert-time">In-play</span><span class="alert-action">On first goal → Step 4 → roll onto the next goal or exit</span></div>
+
+    <button class="reset-checks" onclick="resetChecks()">↺ &nbsp;RESET CHECKLIST</button>
+  </div>
+</div>
+
+<!-- STEP 1 -->
+<div class="step-card s1">
+  <div class="step-header" onclick="toggleStep(1)">
+    <div class="step-num">1</div>
+    <div class="step-info">
+      <div class="step-title">FIND TODAY'S MATCHES</div>
+      <div class="step-desc">Generate prompt → paste into Claude.ai to get qualifying fixtures</div>
+    </div>
+    <div class="step-chevron open" id="chev1">▼</div>
+  </div>
+  <div class="step-body open" id="body1">
+    <div class="prompt-label">Your filters</div>
+    <div class="filter-row">
+      <div class="filter-group">
+        <label>League</label>
+        <select id="f-league" onchange="buildStep1Prompt()">
+          <option value="any top European league">Any Top League</option>
+          <option value="Premier League">Premier League</option>
+          <option value="Championship">Championship</option>
+          <option value="La Liga">La Liga</option>
+          <option value="Bundesliga">Bundesliga</option>
+          <option value="Serie A">Serie A</option>
+          <option value="Ligue 1">Ligue 1</option>
+          <option value="Eredivisie">Eredivisie</option>
+          <option value="Scottish Premiership">Scottish Prem</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <label>Match Favourite</label>
+        <select id="f-fav" onchange="buildStep1Prompt()">
+          <option value="1.40–2.20">1.40 – 2.20</option>
+          <option value="1.20–1.60">1.20 – 1.60</option>
+          <option value="1.60–2.50">1.60 – 2.50</option>
+          <option value="any odds">Any odds</option>
+        </select>
+      </div>
+    </div>
+    <div class="filter-row">
+      <div class="filter-group">
+        <label>Over 2.5 Preference</label>
+        <select id="f-goals" onchange="buildStep1Prompt()">
+          <option value="any">Any goal expectation</option>
+          <option value="low-scoring (Over 2.5 odds above 2.0)">Low-scoring (O2.5 &gt; 2.0)</option>
+          <option value="high-scoring (Over 2.5 odds below 1.80)">High-scoring (O2.5 &lt; 1.80)</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <label>Race Day</label>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:0;">
+          <button id="btn-today" onclick="setDay('today')" style="padding:9px 4px;border-radius:10px;border:1px solid var(--step1);background:rgba(59,130,246,0.15);color:var(--step1);font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:0.82rem;letter-spacing:0.04em;cursor:pointer;">📅 TODAY</button>
+          <button id="btn-tomorrow" onclick="setDay('tomorrow')" style="padding:9px 4px;border-radius:10px;border:1px solid var(--border);background:var(--card2);color:var(--muted);font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:0.82rem;letter-spacing:0.04em;cursor:pointer;">🌙 TMRW</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="prompt-label" style="margin-top:6px;">Generated prompt</div>
+    <div class="prompt-wrap">
+      <div class="prompt-box" id="step1-prompt"></div>
+      <button class="prompt-copy-btn" id="copy1btn" onclick="copyStep1()">📋 &nbsp;COPY PROMPT</button>
+    </div>
+    <div id="s1-flash"></div>
+    <div class="divider"></div>
+    <div class="tip-box">
+      💡 Open <strong style="color:var(--text)">claude.ai</strong> → new chat → paste this prompt → Claude lists qualifying fixtures → pick one → go to Step 2
+    </div>
+  </div>
+</div>
+
+<!-- STEP 2 -->
+<div class="step-card s2">
+  <div class="step-header" onclick="toggleStep(2)">
+    <div class="step-num">2</div>
+    <div class="step-info">
+      <div class="step-title">ENTER MATCH ODDS</div>
+      <div class="step-desc">Input odds &amp; xG → model, timing research, prompt or scan</div>
+    </div>
+    <div class="step-chevron" id="chev2">▼</div>
+  </div>
+  <div class="step-body" id="body2">
+    <div class="filter-row single">
+      <div class="filter-group">
+        <label>Home Team</label>
+        <input type="text" id="homeTeam" placeholder="e.g. Arsenal" oninput="buildStep2Prompt()">
+      </div>
+    </div>
+    <div class="filter-row single">
+      <div class="filter-group">
+        <label>Away Team</label>
+        <input type="text" id="awayTeam" placeholder="e.g. Chelsea" oninput="buildStep2Prompt()">
+      </div>
+    </div>
+    <div class="filter-row">
+      <div class="filter-group">
+        <label>Home Win Odds</label>
+        <input type="number" id="homeOdds" placeholder="2.10" step="0.05" oninput="buildStep2Prompt()">
+      </div>
+      <div class="filter-group">
+        <label>Draw Odds</label>
+        <input type="number" id="drawOdds" placeholder="3.40" step="0.05" oninput="buildStep2Prompt()">
+      </div>
+    </div>
+    <div class="filter-row">
+      <div class="filter-group">
+        <label>Away Win Odds</label>
+        <input type="number" id="awayOdds" placeholder="3.80" step="0.05" oninput="buildStep2Prompt()">
+      </div>
+      <div class="filter-group">
+        <label>Over 2.5 Odds</label>
+        <input type="number" id="overOdds" placeholder="1.90" step="0.05" oninput="buildStep2Prompt()">
+      </div>
+    </div>
+    <div class="filter-row">
+      <div class="filter-group">
+        <label>BTTS Yes Odds <span style="font-size:0.65rem;color:#4b5563;">(optional)</span></label>
+        <input type="number" id="bttsOdds" placeholder="1.75" step="0.05" oninput="buildStep2Prompt()">
+      </div>
+      <div class="filter-group">
+        <label>Scores to Return</label>
+        <select id="numScores" onchange="buildStep2Prompt()">
+          <option value="8">8 scores</option>
+          <option value="10" selected>10 scores</option>
+          <option value="12">12 scores</option>
+          <option value="6">6 scores</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- GENIE ANALYSIS -->
+    <div style="margin-top:4px;background:linear-gradient(160deg,rgba(249,115,22,0.08),rgba(245,200,66,0.05));border:1px solid rgba(249,115,22,0.35);border-radius:14px;padding:14px;">
+      <div style="font-family:'Barlow Condensed',sans-serif;font-size:0.72rem;font-weight:700;letter-spacing:0.1em;color:var(--step4);text-transform:uppercase;margin-bottom:4px;">🧞 Genie Analysis</div>
+      <div style="font-size:0.76rem;color:var(--muted);line-height:1.5;margin-bottom:10px;">
+        Researches recent form, xG, Over 2.5 &amp; goal timing, then hands back a 5-score Target Formula and which team to back. Needs both teams + the 1X2 odds above. If you've uploaded a Betfair screenshot in the scan section below, it also reads the live prices and names the best value score to trade.
+      </div>
+      <button onclick="genieAnalysis()" id="genieBtn" class="btn btn-orange" style="font-size:0.95rem;padding:12px;">🧞 &nbsp;RUN GENIE ANALYSIS</button>
+      <div id="genieStatus" style="margin-top:8px;font-size:0.78rem;font-family:'Barlow Condensed',sans-serif;"></div>
+      <div id="genieOut" style="margin-top:10px;"></div>
+    </div>
+    <div class="divider"></div>
+
+    <!-- xG SECTION -->
+    <div style="margin-top:4px;">
+      <div style="font-family:'Barlow Condensed',sans-serif;font-size:0.7rem;font-weight:700;letter-spacing:0.1em;color:#8b5cf6;text-transform:uppercase;margin-bottom:6px;display:flex;align-items:center;gap:6px;">
+        <span>📊 xG Data</span>
+        <span style="font-size:0.65rem;color:#4b5563;font-weight:400;letter-spacing:0.04em;">(optional — from FootyStats.org)</span>
+      </div>
+      <div class="filter-row">
+        <div class="filter-group">
+          <label>Home xG <span style="font-size:0.65rem;color:#4b5563;">(home games)</span></label>
+          <input type="number" id="homeXG" placeholder="1.45" step="0.01" oninput="buildStep2Prompt()">
+        </div>
+        <div class="filter-group">
+          <label>Home xGA <span style="font-size:0.65rem;color:#4b5563;">(home games)</span></label>
+          <input type="number" id="homeXGA" placeholder="0.90" step="0.01" oninput="buildStep2Prompt()">
+        </div>
+      </div>
+      <div class="filter-row">
+        <div class="filter-group">
+          <label>Away xG <span style="font-size:0.65rem;color:#4b5563;">(away games)</span></label>
+          <input type="number" id="awayXG" placeholder="1.20" step="0.01" oninput="buildStep2Prompt()">
+        </div>
+        <div class="filter-group">
+          <label>Away xGA <span style="font-size:0.65rem;color:#4b5563;">(away games)</span></label>
+          <input type="number" id="awayXGA" placeholder="1.30" step="0.01" oninput="buildStep2Prompt()">
+        </div>
+      </div>
+      <div class="filter-row">
+        <div class="filter-group">
+          <label>Dixon-Coles ρ <span style="font-size:0.65rem;color:#4b5563;">(low-score fix)</span></label>
+          <input type="number" id="rhoInput" value="-0.13" step="0.01" oninput="buildStep2Prompt()">
+        </div>
+        <div class="filter-group">
+          <label>League Avg xG</label>
+          <input type="number" id="leagueAvg" value="1.35" step="0.05" oninput="buildStep2Prompt()">
+        </div>
+      </div>
+      <div id="xgPrediction" style="display:none;background:rgba(139,92,246,0.08);border:1px solid rgba(139,92,246,0.25);border-radius:11px;padding:10px 13px;margin-bottom:8px;">
+        <div style="font-family:'Barlow Condensed',sans-serif;font-size:0.68rem;font-weight:700;letter-spacing:0.1em;color:#8b5cf6;text-transform:uppercase;margin-bottom:4px;">xG Predicted Score</div>
+        <div style="display:flex;align-items:center;gap:10px;">
+          <span id="xgHomePred" style="font-family:'Barlow Condensed',sans-serif;font-size:1.6rem;font-weight:900;color:var(--text);">—</span>
+          <span style="font-family:'Barlow Condensed',sans-serif;font-size:1rem;color:var(--muted);">—</span>
+          <span id="xgAwayPred" style="font-family:'Barlow Condensed',sans-serif;font-size:1.6rem;font-weight:900;color:var(--text);">—</span>
+          <span id="xgRawPred" style="font-family:'Barlow Condensed',sans-serif;font-size:0.78rem;color:#8b5cf6;margin-left:4px;"></span>
+        </div>
+        <div id="xgNote" style="font-size:0.72rem;color:var(--muted);margin-top:3px;"></div>
+        <div id="dcTop" style="font-size:0.72rem;color:#a78bfa;margin-top:6px;font-family:'Barlow Condensed',sans-serif;"></div>
+      </div>
+    </div>
+
+    <!-- GOAL TIMING -->
+    <div class="divider"></div>
+    <div class="prompt-label">⏱ GOAL TIMING RESEARCH</div>
+    <div style="background:rgba(59,130,246,0.05);border:1px solid rgba(59,130,246,0.2);border-radius:14px;padding:13px;">
+      <div style="font-size:0.76rem;color:var(--muted);line-height:1.5;margin-bottom:9px;">
+        Looks up when each team scores and concedes by 15-min bucket. This does <strong style="color:var(--text)">not</strong> change your score probabilities — it sets your exit windows and tells you whether a roll is worth it.
+      </div>
+      <button onclick="researchTiming()" id="timingBtn" class="btn btn-blue" style="font-size:0.9rem;padding:11px;">⏱ &nbsp;RESEARCH GOAL TIMING</button>
+      <div id="timingStatus" style="margin-top:8px;font-size:0.78rem;font-family:'Barlow Condensed',sans-serif;"></div>
+      <div id="timingOut" style="margin-top:10px;"></div>
+    </div>
+
+    <div class="divider"></div>
+    <div class="prompt-label">Generated prompt — paste into Claude.ai</div>
+    <div class="prompt-wrap">
+      <div class="prompt-box" id="step2-prompt">Fill in the match odds above to generate your prompt.</div>
+      <button class="prompt-copy-btn" id="copy2btn" onclick="copyStep2()">📋 &nbsp;COPY PROMPT</button>
+    </div>
+    <div id="s2-flash"></div>
+    <div class="divider"></div>
+
+    <!-- VISION SCAN -->
+    <div class="prompt-label">⚡ FAST TRACK — SCAN BETFAIR SCREENSHOT</div>
+    <div style="background:rgba(34,197,94,0.06);border:1px solid rgba(34,197,94,0.2);border-radius:14px;padding:14px;">
+      <div style="font-size:0.78rem;color:var(--muted);margin-bottom:10px;line-height:1.5;">
+        Upload your Betfair correct score screenshot — Claude will read the odds automatically and populate the score list directly. No copy/paste needed.
+      </div>
+
+      <div style="font-size:0.68rem;font-family:'Barlow Condensed',sans-serif;font-weight:700;letter-spacing:0.08em;color:var(--muted);text-transform:uppercase;margin-bottom:4px;">Screenshot 1 — O2.5 / BTTS / top scores</div>
+      <div id="uploadArea" onclick="document.getElementById('betfairImg').click()" style="border:2px dashed rgba(34,197,94,0.3);border-radius:12px;padding:14px;text-align:center;cursor:pointer;transition:all 0.2s;margin-bottom:8px;">
+        <div style="font-size:1.4rem;margin-bottom:4px;">📸</div>
+        <div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:0.85rem;color:var(--green);">TAP TO UPLOAD</div>
+        <div style="font-size:0.7rem;color:var(--muted);margin-top:2px;">First Betfair screenshot</div>
+      </div>
+      <input type="file" id="betfairImg" accept="image/*" style="display:none" onchange="handleImageUpload(event, 1)">
+      <div id="imgPreview" style="display:none;margin-bottom:8px;">
+        <img id="previewImg" style="width:100%;border-radius:10px;border:1px solid var(--border);max-height:160px;object-fit:cover;">
+        <div style="font-size:0.7rem;color:var(--green);margin-top:3px;font-family:'Barlow Condensed',sans-serif;">✅ Screenshot 1 loaded</div>
+      </div>
+
+      <div style="font-size:0.68rem;font-family:'Barlow Condensed',sans-serif;font-weight:700;letter-spacing:0.08em;color:var(--muted);text-transform:uppercase;margin-bottom:4px;">Screenshot 2 — remaining scores + Any Other <span style="color:#4b5563;font-weight:400;">(optional)</span></div>
+      <div id="uploadArea2" onclick="document.getElementById('betfairImg2').click()" style="border:2px dashed rgba(34,197,94,0.2);border-radius:12px;padding:14px;text-align:center;cursor:pointer;transition:all 0.2s;margin-bottom:10px;">
+        <div style="font-size:1.4rem;margin-bottom:4px;">📸</div>
+        <div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:0.85rem;color:var(--muted);">TAP TO UPLOAD</div>
+        <div style="font-size:0.7rem;color:var(--muted);margin-top:2px;">Second Betfair screenshot (scrolled down)</div>
+      </div>
+      <input type="file" id="betfairImg2" accept="image/*" style="display:none" onchange="handleImageUpload(event, 2)">
+      <div id="imgPreview2" style="display:none;margin-bottom:10px;">
+        <img id="previewImg2" style="width:100%;border-radius:10px;border:1px solid var(--border);max-height:160px;object-fit:cover;">
+        <div style="font-size:0.7rem;color:var(--green);margin-top:3px;font-family:'Barlow Condensed',sans-serif;">✅ Screenshot 2 loaded</div>
+      </div>
+
+      <button id="scanBtn" onclick="scanBetfairImage()" style="width:100%;padding:13px;border-radius:13px;font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:1rem;letter-spacing:0.08em;border:none;cursor:pointer;background:var(--green);color:#000;display:none;">
+        ⚡ &nbsp;SCAN &amp; AUTO-POPULATE SCORES
+      </button>
+      <div id="scanStatus" style="margin-top:8px;font-size:0.78rem;font-family:'Barlow Condensed',sans-serif;"></div>
+    </div>
+
+    <div class="divider"></div>
+    <div class="tip-box">
+      💡 <strong style="color:var(--green)">Fast track:</strong> Upload screenshot above → scan → scores auto-populate<br>
+      💡 <strong style="color:var(--gold)">Manual:</strong> Copy the prompt above → paste into Claude.ai with screenshot → paste results into Step 3<br><br>
+      ⚠️ <strong style="color:var(--gold);">Before scanning:</strong> Enter Home/Draw/Away odds above first — scan reads O2.5, BTTS + scores from screenshot but needs match odds for accurate ranking
+    </div>
+  </div>
+</div>
+
+<!-- STEP 3 -->
+<div class="step-card s3">
+  <div class="step-header" onclick="toggleStep(3)">
+    <div class="step-num">3</div>
+    <div class="step-info">
+      <div class="step-title">PASTE &amp; PARSE SCORES</div>
+      <div class="step-desc">Auto-populated from scan, or paste Claude's score list manually</div>
+    </div>
+    <div class="step-chevron" id="chev3">▼</div>
+  </div>
+  <div class="step-body" id="body3">
+    <div class="prompt-label">Paste Claude's score list here</div>
+    <textarea id="bulkText" rows="8" placeholder="1-0 6.50 HIGH&#10;0-0 5.20 HIGH&#10;2-0 9.00 MED&#10;1-1 8.00 MED&#10;2-1 12.00 LOW&#10;0-1 9.50 LOW"></textarea>
+    <button class="btn btn-green" onclick="parseBulk()">
+      ⚡ &nbsp;PARSE SCORES
+    </button>
+    <div id="s3-flash"></div>
+    <div class="divider"></div>
+    <div class="tip-box">
+      📋 Format: <strong style="color:var(--text)">Score Odds Priority</strong> — one per line<br>
+      e.g. <code style="color:var(--green)">1-0 6.50 HIGH</code> &nbsp;or&nbsp; <code style="color:var(--gold)">0-0 5.20 MED</code><br>
+      Catch-alls: <code style="color:#a78bfa;">Any Other Away Win 3.70 HIGH</code><br><br>
+      Priority is HIGH / MED / LOW — Claude will assign these.
+    </div>
+  </div>
+</div>
+
+<!-- TARGET SCORE BASKET -->
+<div class="settings-card" style="border-color:rgba(249,115,22,0.3);">
+  <div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:0.75rem;letter-spacing:0.1em;color:var(--step4);text-transform:uppercase;margin-bottom:10px;">🎯 Target Score Basket</div>
+  <div style="display:flex;gap:8px;align-items:flex-end;">
+    <div style="flex:1;">
+      <div class="setting-label">Predicted final score</div>
+      <input class="setting-input" id="targetScore" placeholder="1-2" style="font-size:1.3rem;">
+    </div>
+    <button onclick="autoBuildBasket()" class="btn btn-orange" style="flex:1.4;font-size:0.9rem;padding:12px 8px;">⚡ AUTO-BUILD 5</button>
+  </div>
+  <div style="font-size:0.7rem;color:var(--muted);margin-top:8px;line-height:1.5;">
+    Seeds the winner-lean basket around your target — 3 winner scores, 1 draw, 1 other-side protection — exactly like the Genie formula. Fills from the xG predicted score if you leave it blank. Then set each real Betfair back price (tap the odds) or scan.
+  </div>
+</div>
+
+<!-- BET SETTINGS -->
+<div class="settings-card">
+  <div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:0.75rem;letter-spacing:0.1em;color:var(--muted);text-transform:uppercase;margin-bottom:10px;">Bet Settings</div>
+  <div class="settings-grid">
+    <div>
+      <div class="setting-label">Base Stake (£)</div>
+      <input class="setting-input" id="totalStake" type="number" value="100" step="1">
+    </div>
+    <div>
+      <div class="setting-label">Reserve (£)</div>
+      <input class="setting-input" id="reserveStake" type="number" value="100" step="10">
+    </div>
+  </div>
+  <div class="settings-grid" style="margin-top:10px;">
+    <div>
+      <div class="setting-label">Commission %</div>
+      <input class="setting-input" id="commission" type="number" value="2" step="0.5">
+    </div>
+    <div>
+      <div class="setting-label">Stake / score</div>
+      <div class="setting-input" id="stakePerScore" style="background:transparent;border-color:transparent;color:var(--step4);">£—</div>
+    </div>
+  </div>
+  <div style="font-size:0.7rem;color:var(--muted);margin-top:8px;line-height:1.5;">
+    Base stake is split <strong style="color:var(--text);">flat</strong> across every score in the basket (like the demo's £20 × 5). Reserve is held back for the in-play lays in Step 4. Commission applies to every winning return.
+  </div>
+</div>
+
+<!-- SCORE LIST -->
+<div class="scores-card">
+  <div class="scores-header">
+    <div class="scores-title">Scores <span class="score-count" id="scoreCount2">0</span></div>
+    <div style="display:flex;gap:6px;">
+      <button class="btn-sm" onclick="autoSkew()" style="background:#7c3aed;color:#fff;">Auto-skew</button>
+      <button class="btn-sm" onclick="sortScores()" style="background:var(--gold);color:#000;">Sort</button>
+      <button class="btn-sm" onclick="clearAll()" style="background:#7f1d1d;color:#fff;">Clear</button>
+    </div>
+  </div>
+
+  <div class="match-info-bar" id="matchInfoBar">
+    <div class="match-info-teams" id="matchTeams">—</div>
+    <div class="match-info-odds" id="matchOddsPills"></div>
+  </div>
+
+  <div id="scoreList">
+    <div class="empty-state">No scores yet — complete Steps 1–3 above</div>
+  </div>
+</div>
+
+<!-- RESULTS -->
+<div class="results-card" id="results">
+  <div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:0.8rem;letter-spacing:0.1em;color:var(--muted);text-transform:uppercase;margin-bottom:12px;">Basket &amp; Stakes</div>
+
+  <div id="xgResultBanner" style="display:none;background:rgba(74,222,128,0.06);border:1px solid rgba(74,222,128,0.25);border-radius:11px;padding:9px 13px;margin-bottom:12px;align-items:center;gap:6px;"></div>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px;">
+    <div>
+      <div class="stat-label" style="margin-bottom:4px;">Match</div>
+      <input id="exportMatch" placeholder="e.g. Arsenal v Chelsea" style="width:100%;background:var(--card2);border:1px solid var(--border);border-radius:10px;color:var(--text);padding:9px 11px;font-family:'Barlow',sans-serif;font-size:0.82rem;outline:none;">
+    </div>
+    <div>
+      <div class="stat-label" style="margin-bottom:4px;">Kick Off</div>
+      <input id="exportTime" placeholder="e.g. 15:00" style="width:100%;background:var(--card2);border:1px solid var(--border);border-radius:10px;color:var(--text);padding:9px 11px;font-family:'Barlow',sans-serif;font-size:0.82rem;outline:none;">
+    </div>
+  </div>
+
+  <div class="results-stats">
+    <div class="stat-box">
+      <div class="stat-label">Scores in basket</div>
+      <div class="stat-val" id="maxScores">—</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-label">Total staked</div>
+      <div class="stat-val" id="effOdds">—</div>
+    </div>
+  </div>
+  <div class="profit-banner" id="profitText"></div>
+  <div id="stakeBreakdown"></div>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:14px;">
+    <button class="btn" onclick="exportCSV()" style="background:#16a34a;color:#fff;font-size:0.85rem;padding:11px 8px;">
+      📊 SAVE TO EXCEL
+    </button>
+    <button class="btn" onclick="copyForSheets()" id="sheetsBtn" style="background:#1d4ed8;color:#fff;font-size:0.85rem;padding:11px 8px;">
+      📋 COPY FOR SHEETS
+    </button>
+  </div>
+  <div id="export-flash" style="margin-top:6px;"></div>
+</div>
+
+<!-- STEP 4 — LIVE TRADE MANAGER -->
+<div class="step-card s4" id="step4card" style="display:none;">
+  <div class="step-header" onclick="toggleStep(4)">
+    <div class="step-num">4</div>
+    <div class="step-info">
+      <div class="step-title">IN-PLAY — TRADE AS GOALS COME</div>
+      <div class="step-desc">Log each goal, lay the current score, roll green forward</div>
+    </div>
+    <div class="step-chevron" id="chev4">▼</div>
+  </div>
+  <div class="step-body" id="body4">
+
+    <!-- live position -->
+    <div class="prompt-label">Live position <span id="posSummary" style="color:var(--step4);"></span></div>
+    <div id="liveLadder" style="margin-bottom:12px;"></div>
+
+    <div class="divider"></div>
+
+    <!-- roll builder -->
+    <div class="filter-row">
+      <div class="filter-group">
+        <label>Current Score</label>
+        <input type="text" id="curScore" placeholder="1-0" oninput="previewRoll()">
+      </div>
+      <div class="filter-group">
+        <label>Elapsed Min</label>
+        <input type="number" id="elapsedMin" value="30" step="1" oninput="previewRoll()">
+      </div>
+    </div>
+    <div class="filter-row single">
+      <div class="filter-group">
+        <label>Live LAY price on current score</label>
+        <input type="number" id="layPrice" placeholder="4.50" step="0.1" oninput="previewRoll()">
+      </div>
+    </div>
+
+    <div class="prompt-label" style="margin-top:6px;">Lay the current score down to…</div>
+    <div class="seg" id="targetSeg" style="margin-bottom:8px;">
+      <button data-t="be" class="on" onclick="setRollTarget('be')">BREAKEVEN £0</button>
+      <button data-t="agg" onclick="setRollTarget('agg')">−RESERVE</button>
+      <button data-t="cust" onclick="setRollTarget('cust')">CUSTOM</button>
+    </div>
+    <div class="filter-row single" id="custWrap" style="display:none;">
+      <div class="filter-group">
+        <label>Custom target liability on current score (£, negative)</label>
+        <input type="number" id="custTarget" value="-200" step="10" oninput="previewRoll()">
+      </div>
+    </div>
+
+    <div id="nextGoalBox" style="margin-bottom:10px;"></div>
+    <div id="rollOut"></div>
+
+    <div style="display:grid;grid-template-columns:1.4fr 1fr 1fr;gap:8px;margin-top:12px;">
+      <button class="btn btn-orange" onclick="applyRoll()" style="font-size:0.9rem;padding:12px 6px;">✔ APPLY LAY</button>
+      <button class="btn btn2" onclick="undoRoll()" style="background:var(--card2);color:var(--text);border:1px solid var(--border);font-size:0.9rem;padding:12px 6px;">↶ UNDO</button>
+      <button class="btn btn2" onclick="resetTrade()" style="background:var(--card2);color:var(--text);border:1px solid var(--border);font-size:0.9rem;padding:12px 6px;">↺ RESET</button>
+    </div>
+    <div id="tradeLog" style="margin-top:12px;"></div>
+  </div>
+</div>
+
+<!-- STICKY CALC -->
+<div class="sticky-calc">
+  <button class="btn btn-gold" onclick="calculateBasket()" style="font-size:1.15rem;padding:15px;border-radius:15px;box-shadow:0 4px 20px rgba(34,197,94,0.15);">
+    ⚽ &nbsp;STAKE BASKET
+  </button>
+</div>
+
+<script>
+// ══════════════════════════════════════════
+// CONFIG
+// ══════════════════════════════════════════
+const MODEL = 'claude-sonnet-4-6';   // v2 fix: was claude-sonnet-4-20250514 (retired)
+const API_URL = 'https://api.anthropic.com/v1/messages';
+const API_HEADERS = key => ({
+  'Content-Type': 'application/json',
+  'x-api-key': key,
+  'anthropic-version': '2023-06-01',
+  'anthropic-dangerous-direct-browser-access': 'true'
+});
+
+let scores = [];
+let raceDay = 'today';
+let savedResults = [];
+let DCM = null;            // Dixon-Coles matrix
+let timing = null;         // researched goal-timing buckets
+let rollTarget = 'be';
+let lastDutch = null;      // {sel, staked, comm} — the flat-staked basket
+let tradeActions = [];     // sequential in-play lays: [{score, price, stake, minute}]
+let laidScores = [];       // scores that have had a lay applied
+const RTARGET = { be: 0, agg: null, cust: null };  // resolved at compute time
+try { savedResults = JSON.parse(localStorage.getItem('score_dutch_results') || '[]'); } catch(e) {}
+
+// ══════════════════════════════════════════
+// API KEY
+// ══════════════════════════════════════════
+function loadApiKey() {
+  const key = localStorage.getItem('anthropic_api_key') || '';
+  if (key) { document.getElementById('apiKeyInput').value = key; showApiKeyStatus(true); }
+}
+function saveApiKey() {
+  const key = document.getElementById('apiKeyInput').value.trim();
+  if (!key.startsWith('sk-ant-')) {
+    document.getElementById('apiKeyStatus').innerHTML = '<span style="color:var(--red);">❌ Invalid key — should start with sk-ant-</span>';
+    return;
+  }
+  localStorage.setItem('anthropic_api_key', key);
+  showApiKeyStatus(true);
+}
+function showApiKeyStatus(saved) {
+  const status = document.getElementById('apiKeyStatus');
+  if (saved) {
+    status.innerHTML = '<span style="color:var(--green);">✅ API key saved — scanning enabled</span>';
+    document.getElementById('apiKeyCard').style.borderColor = 'rgba(34,197,94,0.3)';
+  }
+}
+function updateApiKeyStatus() {
+  const key = document.getElementById('apiKeyInput').value.trim();
+  const status = document.getElementById('apiKeyStatus');
+  status.innerHTML = (key.length > 10 && !key.startsWith('sk-ant-'))
+    ? '<span style="color:var(--gold);">⚠️ Key should start with sk-ant-</span>' : '';
+}
+function getApiKey() {
+  return localStorage.getItem('anthropic_api_key') || document.getElementById('apiKeyInput').value.trim();
+}
+loadApiKey();
+
+// ══════════════════════════════════════════
+// BACKUP  (v2 — export/import everything)
+// ══════════════════════════════════════════
+function exportBackup() {
+  const data = {
+    _app: 'score-dutcher', _version: 2, _saved: new Date().toISOString(),
+    apiKey: localStorage.getItem('anthropic_api_key') || '',
+    settings: {
+      totalStake: document.getElementById('totalStake').value,
+      reserveStake: document.getElementById('reserveStake').value,
+      commission: document.getElementById('commission').value
+    },
+    match: {
+      homeTeam: document.getElementById('homeTeam').value,
+      awayTeam: document.getElementById('awayTeam').value,
+      homeOdds: document.getElementById('homeOdds').value,
+      drawOdds: document.getElementById('drawOdds').value,
+      awayOdds: document.getElementById('awayOdds').value,
+      overOdds: document.getElementById('overOdds').value,
+      bttsOdds: document.getElementById('bttsOdds').value,
+      homeXG: document.getElementById('homeXG').value,
+      homeXGA: document.getElementById('homeXGA').value,
+      awayXG: document.getElementById('awayXG').value,
+      awayXGA: document.getElementById('awayXGA').value
+    },
+    scores, timing, savedResults
+  };
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `score-dutcher-backup-${new Date().toISOString().slice(0,10)}.json`;
+  document.body.appendChild(a); a.click();
+  setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(url); }, 300);
+  flash('backupFlash', 'Backup downloaded — save it to Drive', true);
+}
+function importBackup(ev) {
+  const file = ev.target.files[0];
+  if (!file) return;
+  const r = new FileReader();
+  r.onload = e => {
+    try {
+      const d = JSON.parse(e.target.result);
+      if (d._app !== 'score-dutcher') throw new Error('Not a Score Dutcher backup');
+      if (d.apiKey) { localStorage.setItem('anthropic_api_key', d.apiKey); document.getElementById('apiKeyInput').value = d.apiKey; showApiKeyStatus(true); }
+      if (d.settings) Object.entries(d.settings).forEach(([k,v]) => { const el = document.getElementById(k); if (el) el.value = v; });
+      if (d.match) Object.entries(d.match).forEach(([k,v]) => { const el = document.getElementById(k); if (el) el.value = v; });
+      if (Array.isArray(d.scores)) { scores = d.scores.map(s => ({ skew: 1, ...s })); renderList(); }
+      if (d.timing) { timing = d.timing; renderTiming(); }
+      if (Array.isArray(d.savedResults)) { savedResults = d.savedResults; localStorage.setItem('score_dutch_results', JSON.stringify(savedResults)); }
+      buildStep2Prompt();
+      flash('backupFlash', 'Backup restored', true);
+    } catch(err) { flash('backupFlash', 'Import failed — ' + err.message, false); }
+  };
+  r.readAsText(file);
+  ev.target.value = '';
+}
+
+// ══════════════════════════════════════════
+// CHECKLIST
+// ══════════════════════════════════════════
+function toggleChecklist() {
+  const body = document.getElementById('bodyCheck');
+  const chev = document.getElementById('chevCheck');
+  const isOpen = body.classList.contains('open');
+  body.classList.toggle('open', !isOpen);
+  chev.classList.toggle('open', !isOpen);
+}
+function toggleCheck(el) { el.querySelector('.check-box').classList.toggle('checked'); updateCheckProgress(); }
+function updateCheckProgress() {
+  const total = document.querySelectorAll('.check-item .check-box').length;
+  const checked = document.querySelectorAll('.check-item .check-box.checked').length;
+  document.getElementById('checkProgress').style.width = Math.round((checked/total)*100) + '%';
+  document.getElementById('checkBadge').textContent = checked + ' / ' + total;
+  const score = document.getElementById('checkScore');
+  if (checked === total) score.innerHTML = '<span style="color:var(--green);font-weight:700;">✅ All checks passed — good to go!</span>';
+  else score.textContent = `${total-checked} item${total-checked!==1?'s':''} remaining before placing`;
+}
+function resetChecks() {
+  document.querySelectorAll('.check-item .check-box').forEach(b => b.classList.remove('checked'));
+  updateCheckProgress();
+}
+updateCheckProgress();
+
+// ══════════════════════════════════════════
+// DAY TOGGLE / STEP TOGGLE
+// ══════════════════════════════════════════
+function setDay(day) {
+  raceDay = day;
+  const t = document.getElementById('btn-today'), m = document.getElementById('btn-tomorrow');
+  if (day === 'today') {
+    t.style.borderColor='var(--step1)'; t.style.background='rgba(59,130,246,0.15)'; t.style.color='var(--step1)';
+    m.style.borderColor='var(--border)'; m.style.background='var(--card2)'; m.style.color='var(--muted)';
+  } else {
+    m.style.borderColor='var(--step2)'; m.style.background='rgba(139,92,246,0.15)'; m.style.color='var(--step2)';
+    t.style.borderColor='var(--border)'; t.style.background='var(--card2)'; t.style.color='var(--muted)';
+  }
+  buildStep1Prompt();
+}
+function toggleStep(n) {
+  const body = document.getElementById('body'+n);
+  const chev = document.getElementById('chev'+n);
+  if (!body) return;
+  const isOpen = body.classList.contains('open');
+  body.classList.toggle('open', !isOpen);
+  chev.classList.toggle('open', !isOpen);
+}
+
+// ══════════════════════════════════════════
+// STEP 1 PROMPT
+// ══════════════════════════════════════════
+function buildStep1Prompt() {
+  const league  = document.getElementById('f-league').value;
+  const fav     = document.getElementById('f-fav').value;
+  const goals   = document.getElementById('f-goals').value;
+  const dayText = raceDay === 'today' ? "today's" : "tomorrow's";
+  const goalsClause = goals === 'any' ? '' : `\n• Goal expectation: ${goals}`;
+  document.getElementById('step1-prompt').textContent =
+`Please search ${dayText} ${league} football fixtures.
+
+List every match that meets ALL of these criteria:
+• Match favourite odds: ${fav} (on Betfair Exchange or similar)
+• Exclude cup finals, play-offs, or matches with significant team news uncertainty${goalsClause}
+
+For each qualifying match list it as:
+HOME vs AWAY • LEAGUE • KICK OFF TIME • HOME ODDS / DRAW / AWAY • OVER 2.5 ODDS
+
+Then rate each match ⭐⭐⭐, ⭐⭐ or ⭐ for correct score dutching suitability based on:
+- Clear favourite (lower match odds = more predictable score distribution ⭐⭐⭐)
+- Low Over 2.5 odds = lower-scoring game = fewer likely scorelines to cover ⭐⭐
+- High BTTS No probability = fewer scorelines involve both teams scoring ⭐
+
+Finish with a top 3 priority list of matches to consider first, with a one-line reason for each.`;
+}
+buildStep1Prompt();
+
+// ══════════════════════════════════════════
+// POISSON + DIXON-COLES  (v2)
+// ══════════════════════════════════════════
+function fact(n){ let f=1; for(let i=2;i<=n;i++) f*=i; return f; }
+function pois(k,l){ return Math.pow(l,k)*Math.exp(-l)/fact(k); }
+function tau(h,a,l,m,r){
+  if(h===0&&a===0) return 1 - l*m*r;
+  if(h===0&&a===1) return 1 + l*r;
+  if(h===1&&a===0) return 1 + m*r;
+  if(h===1&&a===1) return 1 - r;
+  return 1;
+}
+function buildDC(l,m,rho,mx){
+  mx = mx || 8;
+  let M=[], s=0;
+  for(let h=0;h<=mx;h++){ M[h]=[]; for(let a=0;a<=mx;a++){ const p=pois(h,l)*pois(a,m)*tau(h,a,l,m,rho); M[h][a]=p; s+=p; } }
+  for(let h=0;h<=mx;h++) for(let a=0;a<=mx;a++) M[h][a]/=s;
+  return M;
+}
+function isCatchAll(s){ return ['Any Other Home Win','Any Other Away Win','Any Other Draw'].includes(s); }
+// model probability for a score label — catch-alls sum every cell not individually listed
+function modelP(label){
+  if(!DCM) return null;
+  const mx = DCM.length-1;
+  if(/^\d+-\d+$/.test(label)){
+    const [h,a] = label.split('-').map(Number);
+    return (h<=mx && a<=mx) ? DCM[h][a] : 0;
+  }
+  const kind = /home win/i.test(label) ? 'H' : /away win/i.test(label) ? 'A' : /draw/i.test(label) ? 'D' : null;
+  if(!kind) return null;
+  const listed = new Set(scores.map(s=>s.score).filter(x=>/^\d+-\d+$/.test(x)));
+  let t=0;
+  for(let h=0;h<=mx;h++) for(let a=0;a<=mx;a++){
+    const k = h>a?'H' : h<a?'A' : 'D';
+    if(k===kind && !listed.has(h+'-'+a)) t += DCM[h][a];
+  }
+  return t;
+}
+// commission-adjusted edge on a back bet
+function edgeOf(s){
+  const p = modelP(s.score);
+  if(p===null || !p) return null;
+  const comm = (parseFloat(document.getElementById('commission').value)||0)/100;
+  return p * (1 + (s.odds-1)*(1-comm)) - 1;
+}
+
+// ══════════════════════════════════════════
+// STEP 2 PROMPT + xG MODEL
+// ══════════════════════════════════════════
+function buildStep2Prompt() {
+  const home  = document.getElementById('homeTeam').value.trim() || 'Home Team';
+  const away  = document.getElementById('awayTeam').value.trim() || 'Away Team';
+  const homeO = document.getElementById('homeOdds').value;
+  const drawO = document.getElementById('drawOdds').value;
+  const awayO = document.getElementById('awayOdds').value;
+  const overO = document.getElementById('overOdds').value;
+  const bttsO = document.getElementById('bttsOdds').value;
+  const count = document.getElementById('numScores').value;
+
+  const homeXG  = parseFloat(document.getElementById('homeXG').value);
+  const homeXGA = parseFloat(document.getElementById('homeXGA').value);
+  const awayXG  = parseFloat(document.getElementById('awayXG').value);
+  const awayXGA = parseFloat(document.getElementById('awayXGA').value);
+  const rho     = parseFloat(document.getElementById('rhoInput').value) || -0.13;
+  const leagueAvgXG = parseFloat(document.getElementById('leagueAvg').value) || 1.35;
+
+  let xgLine = '';
+  const xgPredDiv = document.getElementById('xgPrediction');
+  if (!isNaN(homeXG) && !isNaN(homeXGA) && !isNaN(awayXG) && !isNaN(awayXGA)) {
+    const homeExpected = homeXG * (awayXGA / leagueAvgXG);
+    const awayExpected = awayXG * (homeXGA / leagueAvgXG);
+    window.lambdaHome = homeExpected;
+    window.lambdaAway = awayExpected;
+    const homeRounded = Math.round(homeExpected*10)/10;
+    const awayRounded = Math.round(awayExpected*10)/10;
+    const homePred = Math.round(homeExpected);
+    const awayPred = Math.round(awayExpected);
+
+    DCM = buildDC(homeExpected, awayExpected, rho, 8);
+
+    xgPredDiv.style.display = 'block';
+    document.getElementById('xgHomePred').textContent = homePred;
+    document.getElementById('xgAwayPred').textContent = awayPred;
+    document.getElementById('xgRawPred').textContent  = `(raw: ${homeRounded} — ${awayRounded})`;
+    const diff = homeExpected - awayExpected;
+    let note = '';
+    if (diff > 0.8) note = 'Strong home advantage in xG — home win scorelines should dominate';
+    else if (diff > 0.3) note = 'Moderate home xG edge — home win likely but away scores worth covering';
+    else if (diff < -0.3) note = 'Away team xG stronger — weight away win scorelines higher';
+    else note = 'xG closely matched — draw scorelines worth strong weighting';
+    document.getElementById('xgNote').textContent = note;
+
+    // top 5 from the DC matrix
+    let flat = [];
+    for (let h=0;h<=8;h++) for (let a=0;a<=8;a++) flat.push({s:h+'-'+a, p:DCM[h][a]});
+    flat.sort((x,y)=>y.p-x.p);
+    document.getElementById('dcTop').textContent =
+      'DC model top 5: ' + flat.slice(0,5).map(f => `${f.s} ${(f.p*100).toFixed(1)}%`).join(' · ');
+
+    window.xgPredictedScore = `${homePred}-${awayPred}`;
+    xgLine = `\n• xG predicted score (FootyStats data): ${home} ${homeRounded} — ${awayRounded} ${away} (rounded: ${homePred}-${awayPred})\n  Note: ${note}`;
+    if (scores.length) renderList();
+  } else {
+    xgPredDiv.style.display = 'none';
+    DCM = null;
+  }
+
+  if (!homeO || !drawO || !awayO || !overO) {
+    document.getElementById('step2-prompt').textContent = 'Fill in all four match odds above to generate your prompt.';
+    return;
+  }
+
+  const bttsLine = bttsO ? `• BTTS Yes odds: ${bttsO} (BTTS No implied: ${(1/(1 - 1/bttsO)).toFixed(2)})` : '';
+  const over = parseFloat(overO);
+  let goalVolumeInstruction;
+  if (over < 1.65) {
+    goalVolumeInstruction = `CRITICAL: Over 2.5 odds are ${overO} — this means ~${Math.round((1/over)*100)}% probability of 3+ goals. You MUST weight scorelines with 3 or more total goals (e.g. 0-3, 1-3, 2-3, 1-2, 0-4, 2-2) heavily. The majority of HIGH priority scores should have 3+ total goals. Do NOT rank low-scoring scorelines (0-1, 1-0, 0-0) as HIGH priority in this match.`;
+  } else if (over < 1.90) {
+    goalVolumeInstruction = `Over 2.5 odds are ${overO} — moderate-to-high goal expectation. Balance 2-goal and 3-goal scorelines, leaning toward 3+ goal scores for HIGH priority selections.`;
+  } else if (over < 2.20) {
+    goalVolumeInstruction = `Over 2.5 odds are ${overO} — roughly even chance of 2 or 3+ goals. Mix of low and medium scoring scorelines appropriate across all priority tiers.`;
+  } else {
+    goalVolumeInstruction = `Over 2.5 odds are ${overO} — low-scoring game likely. Prioritise scorelines with 2 or fewer total goals (0-0, 1-0, 0-1, 1-1, 2-0, 0-2). Keep 3+ goal scorelines in LOW priority only.`;
+  }
+
+  document.getElementById('step2-prompt').textContent =
+`I am dutching the correct score market for this football match:
+
+${home} vs ${away}
+
+Market odds:
+• Home win: ${homeO}
+• Draw: ${drawO}  
+• Away win: ${awayO}
+• Over 2.5 goals: ${overO} (Under 2.5 implied: ${overO ? (1/(1 - 1/overO)).toFixed(2) : '—'})${bttsLine ? '\n' + bttsLine : ''}${xgLine}
+
+Using these odds, estimate the implied probability distribution for the most likely correct scores. Consider:
+1. The match result probabilities implied by the 1X2 odds
+2. Goal volume weighting — ${goalVolumeInstruction}
+3. ${bttsO ? 'The BTTS odds to weight scorelines where both teams score vs clean sheets' : 'Typical clean sheet probabilities for a match with this favourite/underdog split'}
+4. Historical Poisson-style score distributions for matches with these odds profiles${xgLine ? '\n5. The xG predicted score above — use this as an additional anchor for the most likely scorelines. Scores close to the xG prediction should be weighted higher.' : ''}
+
+Return exactly ${count} correct scores, ranked from most to least likely, in this format — one per line, no extra text:
+Score Odds Priority
+
+Where:
+- Score is in H-A format (e.g. 1-0) OR one of the Betfair catch-all markets: "Any Other Home Win", "Any Other Away Win", "Any Other Draw"
+- IMPORTANT: Always check the Betfair screenshot for "Any Other Home Win" and "Any Other Away Win" prices. Include them in the list if their back price is 15.0 or below — do not skip these even if they seem unlikely. They cover high scorelines (4-0, 4-1, 5-0 etc.) and are especially valuable when the favourite is strong or O2.5 is below 1.80
+- Odds is the Betfair Exchange back price — use the screenshot if provided, otherwise estimate based on typical market odds for each scoreline given the match profile
+- Priority is HIGH, MED, or LOW based on your probability ranking (top third = HIGH, middle third = MED, bottom third = LOW)
+
+If a Betfair correct score screenshot is attached, use those real back prices directly. If not, estimate.
+
+Only output the score list. No preamble, no explanation after.`;
+
+  updateMatchBar(home, away, homeO, drawO, awayO, overO, bttsO);
+}
+
+function updateMatchBar(home, away, homeO, drawO, awayO, overO, bttsO) {
+  if (!homeO || !drawO || !awayO) return;
+  document.getElementById('matchTeams').textContent = `${home} vs ${away}`;
+  let pills = `<span class="odds-pill">H ${homeO}</span><span class="odds-pill">D ${drawO}</span><span class="odds-pill">A ${awayO}</span><span class="odds-pill">O2.5 ${overO}</span>`;
+  if (bttsO) pills += `<span class="odds-pill">BTTS ${bttsO}</span>`;
+  document.getElementById('matchOddsPills').innerHTML = pills;
+  document.getElementById('matchInfoBar').classList.add('visible');
+}
+
+// ══════════════════════════════════════════
+// GOAL TIMING RESEARCH  (v2 — web_search tool)
+// ══════════════════════════════════════════
+function bucketWeights() {
+  const base = [0.12,0.14,0.16,0.17,0.19,0.22];   // league baseline, rising
+  if (!timing) return base;
+  const h = timing.home?.scored || [], a = timing.away?.scored || [];
+  const c = base.map((b,i) => b*0.4 + (((h[i]||0)+(a[i]||0))/2)*0.6);
+  const s = c.reduce((x,y)=>x+y,0) || 1;
+  return c.map(x=>x/s);
+}
+function remainingLambda(elapsed) {
+  const lh = window.lambdaHome, la = window.lambdaAway;
+  let total;
+  if (!isNaN(lh) && !isNaN(la) && lh && la) total = lh + la;
+  else {
+    const o = parseFloat(document.getElementById('overOdds').value);
+    total = !isNaN(o) ? (o < 1.7 ? 3.1 : o < 2.0 ? 2.7 : 2.3) : 2.6;   // crude fallback from O2.5
+  }
+  const w = bucketWeights();
+  const idx = Math.min(5, Math.max(0, Math.floor(elapsed/15)));
+  let after = w.slice(idx).reduce((s,x)=>s+x, 0);
+  after -= w[idx] * ((elapsed % 15) / 15);
+  return total * Math.max(0, after);
+}
+async function researchTiming() {
+  const key = getApiKey();
+  const btn = document.getElementById('timingBtn');
+  const st  = document.getElementById('timingStatus');
+  const h = document.getElementById('homeTeam').value.trim();
+  const a = document.getElementById('awayTeam').value.trim();
+  if (!key) { st.innerHTML = '<span style="color:var(--red);">❌ No API key saved</span>'; return; }
+  if (!h || !a) { st.innerHTML = '<span style="color:var(--gold);">⚠️ Enter both team names first</span>'; return; }
+
+  btn.innerHTML = '⏳ &nbsp;RESEARCHING...';
+  btn.disabled = true;
+  st.innerHTML = '<span style="color:var(--muted);">Searching recent goal-timing splits…</span>';
+
+  const prompt = `Research the recent (current season) goal-timing distribution for these two football teams.
+For each team, give the proportion of goals SCORED and CONCEDED falling in each 15-minute bucket: [0-15, 15-30, 30-45, 45-60, 60-75, 75-90+]. Each array of 6 numbers should sum to approximately 1.
+Home team: ${h}
+Away team: ${a}
+Return ONLY valid JSON, no preamble, no markdown fences:
+{"home":{"scored":[6 numbers],"conceded":[6 numbers]},"away":{"scored":[6 numbers],"conceded":[6 numbers]},"first_goal_minute_est":number,"confidence":"high|medium|low","notes":"one short line on early/late scoring tendencies"}`;
+
+  try {
+    const res = await fetch(API_URL, {
+      method: 'POST', headers: API_HEADERS(key),
+      body: JSON.stringify({
+        model: MODEL, max_tokens: 1200,
+        messages: [{ role: 'user', content: prompt }],
+        tools: [{ type: 'web_search_20250305', name: 'web_search' }]
+      })
+    });
+    const data = await res.json();
+    if (data.error) throw new Error(data.error.message);
+    const text = (data.content || []).filter(b => b.type === 'text').map(b => b.text).join('\n');
+    const clean = text.replace(/```json|```/g, '').trim();
+    const json = clean.slice(clean.indexOf('{'), clean.lastIndexOf('}') + 1);
+    timing = JSON.parse(json);
+    renderTiming();
+    st.innerHTML = '<span style="color:var(--green);">✅ Timing profile loaded</span>';
+    btn.innerHTML = '↻ &nbsp;REFRESH TIMING';
+  } catch(e) {
+    st.innerHTML = `<span style="color:var(--gold);">⚠️ ${e.message} — proceeding without timing. Exit windows will use the 46/54 half split.</span>`;
+    btn.innerHTML = '⏱ &nbsp;RETRY TIMING RESEARCH';
+  }
+  btn.disabled = false;
+}
+function renderTiming() {
+  if (!timing) return;
+  const bk = ['0-15','15-30','30-45','45-60','60-75','75-90'];
+  const h = document.getElementById('homeTeam').value.trim() || 'Home';
+  const a = document.getElementById('awayTeam').value.trim() || 'Away';
+  const row = (name, arr) => `<tr><td>${name}</td>${bk.map((_,i)=>`<td>${(((arr||[])[i]||0)*100).toFixed(0)}%</td>`).join('')}</tr>`;
+  const conf = (timing.confidence||'').toLowerCase();
+  const confColor = conf==='high' ? 'var(--green)' : conf==='low' ? 'var(--red)' : 'var(--gold)';
+  document.getElementById('timingOut').innerHTML = `
+    <table class="timing-table">
+      <tr><th style="text-align:left;">Bucket</th>${bk.map(b=>`<th>${b}</th>`).join('')}</tr>
+      ${row(h+' scored', timing.home?.scored)}
+      ${row(h+' conceded', timing.home?.conceded)}
+      ${row(a+' scored', timing.away?.scored)}
+      ${row(a+' conceded', timing.away?.conceded)}
+    </table>
+    <div class="info-box">Est. first goal ≈ ${timing.first_goal_minute_est ?? '—'}′ · confidence <span style="color:${confColor};font-weight:700;">${timing.confidence || 'unknown'}</span><br>${timing.notes || ''}</div>
+    <div style="font-size:0.7rem;color:var(--muted);margin-top:6px;line-height:1.5;">Timing is noisier than xG. It modifies your exit windows and roll aggression — it never resizes the core dutch.</div>`;
+}
+
+// ══════════════════════════════════════════
+// GENIE ANALYSIS  (v4 — predict + market compare in one call)
+// ══════════════════════════════════════════
+async function genieAnalysis() {
+  const key = getApiKey();
+  const btn = document.getElementById('genieBtn');
+  const st  = document.getElementById('genieStatus');
+  const home = document.getElementById('homeTeam').value.trim();
+  const away = document.getElementById('awayTeam').value.trim();
+  const homeO = document.getElementById('homeOdds').value;
+  const drawO = document.getElementById('drawOdds').value;
+  const awayO = document.getElementById('awayOdds').value;
+  const overO = document.getElementById('overOdds').value;
+  if (!key) { st.innerHTML = '<span style="color:var(--red);">❌ No API key saved</span>'; return; }
+  if (!home || !away || !homeO || !drawO || !awayO) { st.innerHTML = '<span style="color:var(--gold);">⚠️ Enter both teams and the Home/Draw/Away odds first</span>'; return; }
+
+  const hasShot = !!betfairImageBase64;
+  btn.innerHTML = '⏳ &nbsp;RESEARCHING...';
+  btn.disabled = true;
+  st.innerHTML = `<span style="color:var(--muted);">Researching form, xG &amp; goal timing${hasShot ? ' + reading your Betfair screenshot' : ''}…</span>`;
+
+  const prompt = `You are a football correct-score trading analyst working like "Football Trading Genie".
+Match: ${home} vs ${away}. Market odds — Home ${homeO}, Draw ${drawO}, Away ${awayO}${overO ? `, Over 2.5 ${overO}` : ''}.
+Use web search to research: recent results/form for both teams, season xG total for the fixture, Over 2.5 goals probability, and goal-timing tendencies (early 0-15 min and late 75-90 min scoring/conceding).
+Produce a Target Score Formula of exactly 5 correct scores to dutch and trade: 3 aligned with the likely winner, 2 for draw/underdog protection. Favour tight, low-to-mid scorelines.
+${hasShot ? 'A Betfair Exchange correct-score screenshot is attached. Read the back price for each scoreline. Compare the market prices against your predicted likelihoods and name the SINGLE best score to enter/trade around — the one where the market price is most generous relative to its true chance.' : ''}
+Return ONLY valid JSON, no preamble, no markdown fences:
+{
+ "backing":"home|away|draw",
+ "xg_total":number,
+ "over25_prob":number between 0 and 1,
+ "target_scores":["H-A","H-A","H-A","H-A","H-A"],
+ "primary_target":"H-A",
+ "reasoning":"2-3 sentence Genie-style summary of why these scores and which team",
+ "early_goal":{"home":number_percent,"away":number_percent},
+ "late_goal":{"home":number_percent,"away":number_percent},
+ "timing":{"home":{"scored":[6 numbers summing to ~1],"conceded":[6]},"away":{"scored":[6],"conceded":[6]}},
+ ${hasShot ? '"market_prices":{"H-A":price,...for each target score},"suggested_trade":{"score":"H-A","reason":"one line","value_note":"one line on the edge"},' : ''}
+ "confidence":"high|medium|low"
+}`;
+
+  const content = [];
+  if (hasShot) {
+    content.push({ type:'image', source:{ type:'base64', media_type: imgMime1, data: betfairImageBase64 } });
+    if (betfairImageBase64_2) content.push({ type:'image', source:{ type:'base64', media_type: imgMime2, data: betfairImageBase64_2 } });
+  }
+  content.push({ type:'text', text: prompt });
+
+  try {
+    const res = await fetch(API_URL, {
+      method:'POST', headers: API_HEADERS(key),
+      body: JSON.stringify({
+        model: MODEL, max_tokens: 2600,
+        messages: [{ role:'user', content }],
+        tools: [{ type:'web_search_20250305', name:'web_search' }]
+      })
+    });
+    const data = await res.json();
+    if (data.error) throw new Error(data.error.message);
+    const text = (data.content || []).filter(b => b.type === 'text').map(b => b.text).join('\n');
+    const clean = text.replace(/```json|```/g, '').trim();
+    const g = JSON.parse(clean.slice(clean.indexOf('{'), clean.lastIndexOf('}') + 1));
+    applyGenie(g, hasShot);
+    st.innerHTML = '<span style="color:var(--green);">✅ Analysis complete — basket seeded below</span>';
+    btn.innerHTML = '🧞 &nbsp;RE-RUN GENIE';
+  } catch(e) {
+    st.innerHTML = `<span style="color:var(--gold);">⚠️ ${e.message}. Try again, or use the manual xG + scan path.</span>`;
+    btn.innerHTML = '🧞 &nbsp;RETRY GENIE ANALYSIS';
+  }
+  btn.disabled = false;
+}
+
+function applyGenie(g, hadShot) {
+  // seed target + basket from the Genie's own picks
+  const ts = (g.target_scores || []).filter(s => /^\d+-\d+$/.test(s) || isCatchAll(s));
+  window.targetScore = g.primary_target || ts[0] || null;
+  window.xgPredictedScore = window.targetScore;
+  if (window.targetScore) document.getElementById('targetScore').value = window.targetScore;
+
+  if (ts.length) {
+    scores = ts.map((sc, i) => {
+      const price = g.market_prices && g.market_prices[sc];
+      const modelOdds = (DCM && modelP(sc)) ? Math.round((1/modelP(sc))*10)/10 : '';
+      const odds = price || modelOdds || 0;
+      return { score: sc, odds, priority: i < 2 ? 'HIGH' : i < 4 ? 'MED' : 'LOW', skew: 1, needsPrice: !odds };
+    });
+    renderList();
+  }
+
+  // fill Over 2.5 if empty
+  if (g.over25_prob && !document.getElementById('overOdds').value) {
+    document.getElementById('overOdds').value = (1 / g.over25_prob).toFixed(2);
+    buildStep2Prompt();
+  }
+
+  // feed the timing engine
+  if (g.timing && g.timing.home && g.timing.away) {
+    timing = { ...g.timing, first_goal_minute_est: g.timing.first_goal_minute_est, confidence: g.confidence || 'medium', notes: (g.reasoning||'').slice(0,120) };
+    renderTiming();
+    document.getElementById('timingCard') && (document.getElementById('timingCard').style.display = 'block');
+  }
+
+  renderGenie(g, hadShot);
+}
+
+function renderGenie(g, hadShot) {
+  const backTeam = g.backing === 'home' ? document.getElementById('homeTeam').value.trim()
+                 : g.backing === 'away' ? document.getElementById('awayTeam').value.trim() : 'the draw';
+  const eg = g.early_goal || {}, lg = g.late_goal || {};
+  const conf = (g.confidence||'').toLowerCase();
+  const confColor = conf==='high'?'var(--green)':conf==='low'?'var(--red)':'var(--gold)';
+
+  let suggest = '';
+  if (hadShot && g.suggested_trade && g.suggested_trade.score) {
+    const s = g.suggested_trade;
+    suggest = `<div style="background:rgba(34,197,94,0.08);border:1px solid rgba(34,197,94,0.35);border-radius:11px;padding:11px 13px;margin-top:10px;">
+      <div style="font-family:'Barlow Condensed',sans-serif;font-size:0.68rem;font-weight:700;letter-spacing:0.1em;color:var(--green);text-transform:uppercase;">⭐ Best value to trade</div>
+      <div style="font-family:'Barlow Condensed',sans-serif;font-size:1.6rem;font-weight:900;color:var(--green);margin:2px 0;">${s.score}</div>
+      <div style="font-size:0.76rem;color:var(--muted);line-height:1.5;">${s.reason || ''}${s.value_note ? '<br><span style="color:var(--green);">'+s.value_note+'</span>' : ''}</div>
+    </div>`;
+  }
+
+  document.getElementById('genieOut').innerHTML = `
+    <div style="background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:13px;">
+      <div style="display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:6px;">
+        <span style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:1rem;">Backing <span style="color:var(--step4);">${backTeam}</span></span>
+        <span class="muted">xG ~${g.xg_total ?? '—'} · O2.5 ${(g.over25_prob!=null?(g.over25_prob*100).toFixed(0)+'%':'—')} · conf <span style="color:${confColor};font-weight:700;">${g.confidence||'—'}</span></span>
+      </div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;margin:10px 0;">
+        ${(g.target_scores||[]).map((s,i)=>`<span style="font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:1.05rem;padding:4px 11px;border-radius:8px;background:${s===g.primary_target?'rgba(249,115,22,0.15)':'var(--card)'};border:1px solid ${s===g.primary_target?'var(--step4)':'var(--border)'};color:${s===g.primary_target?'var(--step4)':'var(--text)'};">${s}${g.market_prices&&g.market_prices[s]?`<span style="font-size:0.7rem;color:var(--gold);font-weight:600;"> @${g.market_prices[s]}</span>`:''}</span>`).join('')}
+      </div>
+      <div style="font-size:0.8rem;color:var(--muted);line-height:1.55;">${g.reasoning||''}</div>
+      <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:10px;font-family:'Barlow Condensed',sans-serif;font-size:0.78rem;">
+        <span class="muted">Early 0-15′: <span style="color:var(--text);">H ${eg.home??'—'}% · A ${eg.away??'—'}%</span></span>
+        <span class="muted">Late 75-90′: <span style="color:var(--text);">H ${lg.home??'—'}% · A ${lg.away??'—'}%</span></span>
+      </div>
+      ${suggest}
+      <div style="font-size:0.7rem;color:var(--muted);margin-top:10px;line-height:1.5;">Basket seeded below with these five scores${hadShot?' and the live prices read from your screenshot':''}. Check each price, then <strong style="color:var(--text);">Stake Basket</strong>. This is model + market guidance, not a guarantee — the edge is only as good as the research.</div>
+    </div>`;
+}
+
+// ══════════════════════════════════════════
+// COPY
+// ══════════════════════════════════════════
+function copyText(text, btnId) {
+  const btn = document.getElementById(btnId);
+  const orig = btn.innerHTML;
+  const done = () => {
+    btn.innerHTML = '✅ &nbsp;COPIED!';
+    btn.style.background = '#15803d'; btn.style.color = '#fff';
+    setTimeout(() => { btn.innerHTML = orig; btn.style.background = ''; btn.style.color = ''; }, 2000);
+  };
+  if (navigator.clipboard?.writeText) navigator.clipboard.writeText(text).then(done).catch(() => fbCopy(text, done));
+  else fbCopy(text, done);
+}
+function fbCopy(text, cb) {
+  const ta = document.createElement('textarea');
+  ta.value = text; ta.style.cssText = 'position:fixed;opacity:0';
+  document.body.appendChild(ta); ta.focus(); ta.select();
+  try { document.execCommand('copy'); cb(); } catch(e) {}
+  document.body.removeChild(ta);
+}
+function copyStep1() { copyText(document.getElementById('step1-prompt').textContent, 'copy1btn'); }
+function copyStep2() { copyText(document.getElementById('step2-prompt').textContent.trim(), 'copy2btn'); }
+
+// ══════════════════════════════════════════
+// PARSE
+// ══════════════════════════════════════════
+function parseLine(line) {
+  const parts = line.trim().split(/\s+/);
+  if (parts.length < 2) return null;
+  let priority = 'MED', oddsRaw, scoreRaw;
+  if (parts.length >= 3 && ['HIGH','MED','LOW'].includes(parts[parts.length-1].toUpperCase())) {
+    priority = parts[parts.length-1].toUpperCase();
+    oddsRaw = parts[parts.length-2];
+    scoreRaw = parts.slice(0, parts.length-2).join(' ');
+  } else {
+    oddsRaw = parts[parts.length-1];
+    scoreRaw = parts.slice(0, parts.length-1).join(' ');
+  }
+  const odds = parseFloat(oddsRaw);
+  if (!scoreRaw || isNaN(odds) || odds <= 1) return null;
+  return { score: scoreRaw, odds, priority, skew: 1 };
+}
+function parseBulk() {
+  const text = document.getElementById('bulkText').value.trim();
+  if (!text) { flash('s3-flash', 'Nothing to parse', false); return; }
+  let added = 0;
+  text.split('\n').forEach(line => {
+    const s = parseLine(line);
+    if (!s) return;
+    if (scores.some(x => x.score.toLowerCase() === s.score.toLowerCase())) return;
+    scores.push(s); added++;
+  });
+  if (added > 0) {
+    document.getElementById('bulkText').value = '';
+    sortScores();
+    flash('s3-flash', `${added} scores added and sorted`, true);
+    const home = document.getElementById('homeTeam').value.trim();
+    const away = document.getElementById('awayTeam').value.trim();
+    if (home && away) document.getElementById('exportMatch').value = `${home} v ${away}`;
+  } else {
+    flash('s3-flash', 'Could not parse — check format (Score Odds Priority)', false);
+  }
+}
+function flash(id, msg, ok) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.innerHTML = `<span class="flash-msg ${ok ? 'flash-ok' : 'flash-err'}">${ok ? '✅' : '❌'} ${msg}</span>`;
+  setTimeout(() => el.innerHTML = '', 3500);
+}
+
+// ══════════════════════════════════════════
+// SCORES
+// ══════════════════════════════════════════
+const priOrder = { HIGH: 0, MED: 1, LOW: 2 };
+function hybridScore(s) { return (2 - priOrder[s.priority]) * 10 + (20 / s.odds); }
+function editOdds(i) {
+  const v = prompt(`Correct score odds for ${scores[i].score}:`, scores[i].odds);
+  if (v !== null) {
+    const o = parseFloat(v);
+    if (o > 1) { scores[i].odds = o; renderList(); } else alert('Odds must be greater than 1.0');
+  }
+}
+function editPriority(i) {
+  const opts = ['HIGH','MED','LOW'];
+  scores[i].priority = opts[(opts.indexOf(scores[i].priority) + 1) % 3];
+  renderList();
+}
+function editSkew(i) {
+  const cycle = [0.7, 1.0, 1.3, 1.6];
+  const cur = scores[i].skew ?? 1;
+  const idx = cycle.findIndex(c => Math.abs(c - cur) < 0.01);
+  scores[i].skew = cycle[(idx + 1) % cycle.length];
+  renderList();
+}
+// set skew from model edge — positive edge gets more stake
+function autoSkew() {
+  if (!DCM) { alert('Enter all four xG values in Step 2 first — auto-skew needs the model.'); return; }
+  scores.forEach(s => {
+    const e = edgeOf(s);
+    if (e === null) { s.skew = 1; return; }
+    s.skew = e > 0.10 ? 1.6 : e > 0.03 ? 1.3 : e > -0.05 ? 1.0 : 0.7;
+  });
+  renderList();
+  flash('export-flash', 'Skew set from model edge', true);
+}
+function removeScore(i) { scores.splice(i,1); renderList(); }
+function clearAll() {
+  if (confirm('Clear all scores?')) {
+    scores = []; renderList();
+    document.getElementById('results').style.display = 'none';
+    document.getElementById('step4card').style.display = 'none';
+  }
+}
+function sortScores() { scores.sort((a,b) => hybridScore(b) - hybridScore(a)); renderList(); }
+
+function renderList() {
+  const div = document.getElementById('scoreList');
+  if (!scores.length) {
+    div.innerHTML = '<div class="empty-state">No scores yet — complete Steps 1–3 above</div>';
+    document.getElementById('scoreCount2').textContent = 0;
+    return;
+  }
+  div.innerHTML = scores.map((s,i) => {
+    const priClass = s.priority === 'HIGH' ? 'pri-high' : s.priority === 'MED' ? 'pri-med' : 'pri-low';
+    const catchAll = isCatchAll(s.score);
+    const skew = s.skew ?? 1;
+    const p = modelP(s.score);
+    const e = edgeOf(s);
+    const scoreDisplay = catchAll
+      ? `<span style="font-size:0.85rem;color:#a78bfa;font-weight:700;">${s.score}</span>`
+      : `<div class="score-label">${s.score}</div>`;
+    const edgeHtml = (e === null) ? ''
+      : `<span class="mini-pill ${e>0?'edge-pos':'edge-neg'}" title="model edge, net of commission">${e>0?'+':''}${(e*100).toFixed(1)}%</span>`;
+    const modelHtml = (p === null) ? ''
+      : `<span style="font-size:0.7rem;color:var(--muted);font-family:'Barlow Condensed',sans-serif;">model ${(p*100).toFixed(1)}% · fair ${(1/p).toFixed(2)}</span>`;
+    return `<div class="score-card" style="${catchAll ? 'border-color:rgba(167,139,250,0.3);' : ''}">
+      <div style="flex:1;min-width:0;">
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+          ${scoreDisplay}
+          <span onclick="editPriority(${i})" class="priority-badge ${priClass}" style="cursor:pointer;">${s.priority}</span>
+          ${catchAll ? '<span style="font-size:0.62rem;color:#6b7280;font-family:Barlow Condensed,sans-serif;letter-spacing:0.05em;">CATCH-ALL</span>' : ''}
+        </div>
+        <div class="score-meta" style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-top:5px;">
+          <span onclick="editOdds(${i})" style="cursor:pointer;background:rgba(245,200,66,0.1);border:1px solid rgba(245,200,66,0.3);border-radius:7px;padding:2px 8px;font-family:Barlow Condensed,sans-serif;font-weight:700;color:var(--gold);font-size:0.9rem;">@ ${s.odds}</span>
+          <span onclick="editSkew(${i})" class="mini-pill skew-pill" title="stake skew — tap to cycle">×${skew.toFixed(1)}</span>
+          ${edgeHtml}
+        </div>
+        <div class="score-priority">${modelHtml || 'tap odds, skew or priority to edit'}</div>
+      </div>
+      <button class="remove-btn" onclick="removeScore(${i})">✕</button>
+    </div>`;
+  }).join('');
+  document.getElementById('scoreCount2').textContent = scores.length;
+}
+
+// ══════════════════════════════════════════
+// AUTO-BUILD TARGET SCORE BASKET  (v3)
+// ══════════════════════════════════════════
+// From a predicted final score, seed the winner-lean basket:
+//   3 winner scores + 1 draw bridge + 1 other-side protection (Genie formula)
+function templateFor(th, ta) {
+  if (ta > th)  return ['0-1','0-2','1-2','1-1','2-1']; // away winner
+  if (th > ta)  return ['1-0','2-0','2-1','1-1','1-2']; // home winner
+  return ['1-1','2-2','0-0','1-0','0-1'];               // draw lean
+}
+function autoBuildBasket() {
+  let t = document.getElementById('targetScore').value.trim();
+  if (!t && window.xgPredictedScore) { t = window.xgPredictedScore; document.getElementById('targetScore').value = t; }
+  if (!/^\d+-\d+$/.test(t)) { alert('Enter a target score like 1-2 (or fill the xG boxes in Step 2 first).'); return; }
+  const [th, ta] = t.split('-').map(Number);
+  let basket = templateFor(th, ta);
+  if (!basket.includes(t)) basket[basket.length - 1] = t;   // guarantee the target itself is covered
+
+  scores = basket.map(sc => {
+    const p = (DCM && modelP(sc)) ? modelP(sc) : null;
+    const odds = p ? Math.round((1/p) * 10) / 10 : '';       // seed with model fair odds; user overwrites with Betfair price
+    const pr = p == null ? 'MED' : p >= 0.10 ? 'HIGH' : p >= 0.05 ? 'MED' : 'LOW';
+    return { score: sc, odds: odds || 0, priority: pr, skew: 1, needsPrice: !odds };
+  });
+  window.targetScore = t;
+  renderList();
+  document.getElementById('body3').classList.add('open');
+  document.getElementById('chev3').classList.add('open');
+  flash('export-flash', `Basket built around ${t} — now set each Betfair back price (tap the odds) or scan`, true);
+  document.querySelector('.scores-card').scrollIntoView({ behavior:'smooth', block:'start' });
+}
+
+// ══════════════════════════════════════════
+// STAKE BASKET  (v3 — flat stakes)
+// ══════════════════════════════════════════
+function calculateBasket() {
+  if (!scores.length) return alert('Build or paste a basket first');
+  const missing = scores.filter(s => !s.odds || s.odds <= 1);
+  if (missing.length) { alert(`Set a real Betfair back price for: ${missing.map(s=>s.score).join(', ')} (tap the @ odds)`); return; }
+
+  const base = parseFloat(document.getElementById('totalStake').value) || 100;
+  const comm = (parseFloat(document.getElementById('commission').value) || 0) / 100;
+  const n = scores.length;
+  const per = base / n;                                    // FLAT stake per score
+  document.getElementById('stakePerScore').textContent = '£' + per.toFixed(2);
+
+  const sel = scores.map(s => ({ ...s, skew: s.skew ?? 1, stake: per }));
+  const staked = sel.reduce((a,b) => a + b.stake, 0);
+  sel.forEach(b => {
+    b.gross = b.stake * b.odds - staked;                   // pre-match P&L if this score is the final
+    b.net = b.gross > 0 ? b.gross * (1 - comm) : b.gross;
+  });
+
+  document.getElementById('maxScores').textContent = n;
+  document.getElementById('effOdds').textContent = '£' + staked.toFixed(2);
+  const nets = sel.map(b => b.net);
+  document.getElementById('profitText').innerHTML =
+    `Profit range: £${Math.min(...nets).toFixed(2)} – £${Math.max(...nets).toFixed(2)}<div class="profit-sub">flat £${per.toFixed(2)}/score · net of ${(comm*100).toFixed(1)}% commission · −£${staked.toFixed(2)} on any uncovered score. These are the pre-match numbers — you'll trade them up as goals come in Step 4.</div>`;
+
+  const tScore = window.targetScore || window.xgPredictedScore || null;
+  const xgBanner = document.getElementById('xgResultBanner');
+  if (tScore) {
+    xgBanner.style.display = 'flex';
+    xgBanner.innerHTML = `<span style="color:var(--muted);font-size:0.7rem;letter-spacing:0.08em;text-transform:uppercase;font-family:'Barlow Condensed',sans-serif;">Target Score</span><span style="font-family:'Barlow Condensed',sans-serif;font-size:1.3rem;font-weight:900;color:var(--step4);margin-left:10px;">${tScore}</span><span style="font-size:0.72rem;color:var(--muted);margin-left:8px;">← trading toward this</span>`;
+  } else xgBanner.style.display = 'none';
+
+  document.getElementById('stakeBreakdown').innerHTML = sel.map(s => {
+    const priClass = s.priority === 'HIGH' ? 'pri-high' : s.priority === 'MED' ? 'pri-med' : 'pri-low';
+    const catchAll = isCatchAll(s.score);
+    const isT = tScore && s.score === tScore;
+    const rowStyle = isT ? 'border-color:var(--step4);background:rgba(249,115,22,0.06);' : catchAll ? 'border-color:rgba(167,139,250,0.3);' : '';
+    const nameStyle = isT ? 'color:var(--step4);font-size:1.1rem;' : catchAll ? 'font-size:0.85rem;color:#a78bfa;' : '';
+    return `<div class="stake-row" style="${rowStyle}">
+      <div>
+        <div style="display:flex;align-items:center;gap:7px;flex-wrap:wrap;">
+          <div class="stake-name" style="${nameStyle}">${s.score}</div>
+          <span class="priority-badge ${priClass}">${s.priority}</span>
+          ${isT ? '<span style="font-size:0.62rem;color:var(--step4);font-family:Barlow Condensed,sans-serif;letter-spacing:0.05em;">🎯 TARGET</span>' : ''}
+          ${catchAll && !isT ? '<span style="font-size:0.62rem;color:#6b7280;font-family:Barlow Condensed,sans-serif;">CATCH-ALL</span>' : ''}
+        </div>
+        <div class="stake-odds">@ ${s.odds} &nbsp;·&nbsp; £${s.net.toFixed(2)} net if it lands</div>
+      </div>
+      <div class="stake-amount" style="${isT ? 'color:var(--step4);' : ''}">£${s.stake.toFixed(2)}</div>
+    </div>`;
+  }).join('');
+
+  lastDutch = { sel, staked, comm };
+  resetTrade();                              // start the in-play position fresh from this basket
+  document.getElementById('step4card').style.display = 'block';
+
+  const res = document.getElementById('results');
+  res.style.display = 'block';
+  setTimeout(() => res.scrollIntoView({ behavior:'smooth', block:'start' }), 100);
+}
+
+// ══════════════════════════════════════════
+// STEP 4 — LIVE TRADE MANAGER  (v3, sequential)
+// ══════════════════════════════════════════
+function setRollTarget(t) {
+  rollTarget = t;
+  document.querySelectorAll('#targetSeg button').forEach(b => b.classList.toggle('on', b.dataset.t === t));
+  document.getElementById('custWrap').style.display = (t === 'cust') ? 'block' : 'none';
+  previewRoll();
+}
+// a final score is only still possible if both tallies are >= the current score
+function reachable(final, cur) {
+  if (isCatchAll(final)) return true;
+  if (!/^\d+-\d+$/.test(cur) || !/^\d+-\d+$/.test(final)) return true;
+  const [fh,fa] = final.split('-').map(Number);
+  const [ch,ca] = cur.split('-').map(Number);
+  return fh >= ch && fa >= ca;
+}
+// does a basket bet win if the final score is S?
+function betWinsOn(b, S) {
+  if (isCatchAll(b.score)) {
+    if (!/^\d+-\d+$/.test(S)) return false;
+    const [h,a] = S.split('-').map(Number);
+    const side = h>a ? 'home' : h<a ? 'away' : 'draw';
+    const want = /home/i.test(b.score) ? 'home' : /away/i.test(b.score) ? 'away' : 'draw';
+    if (side !== want) return false;
+    return !lastDutch.sel.some(x => x.score === S);   // catch-all excludes explicitly-listed scores
+  }
+  return b.score === S;
+}
+// GROSS P&L if the final score is S, given the basket + all applied lays
+function grossPnL(S) {
+  if (!lastDutch) return 0;
+  const { sel, staked } = lastDutch;
+  let p = sel.reduce((a,b) => a + (betWinsOn(b, S) ? b.stake * b.odds : 0), 0) - staked;
+  tradeActions.forEach(act => { p += (act.score === S) ? -act.stake * (act.price - 1) : act.stake; });
+  return p;
+}
+function netOf(g, comm) { return g > 0 ? g * (1 - comm) : g; }
+function totalLaid() { return tradeActions.reduce((a,x) => a + x.stake, 0); }
+
+function resetTrade() { tradeActions = []; laidScores = []; renderLive(); renderTradeLog(); document.getElementById('rollOut').innerHTML = ''; }
+function undoRoll() { if (tradeActions.length) { const last = tradeActions.pop(); laidScores = [...new Set(tradeActions.map(a=>a.score))]; renderLive(); renderTradeLog(); previewRoll(); } }
+
+// suggested lay stake to bring the current score's P&L to the chosen target
+function rollStake(cur, L) {
+  const reserve = parseFloat(document.getElementById('reserveStake').value) || 0;
+  const cust = parseFloat(document.getElementById('custTarget').value) || 0;
+  const T = rollTarget === 'be' ? 0 : rollTarget === 'agg' ? -reserve : cust;
+  const G = grossPnL(cur);
+  return { T, G, x: (G - T) / (L - 1) };
+}
+
+function previewRoll() {
+  const out = document.getElementById('rollOut');
+  if (!lastDutch) { out.innerHTML = ''; return; }
+  const cur = document.getElementById('curScore').value.trim();
+  const L = parseFloat(document.getElementById('layPrice').value);
+  const elapsed = parseFloat(document.getElementById('elapsedMin').value) || 0;
+  const comm = lastDutch.comm;
+
+  const lam = remainingLambda(elapsed);
+  const pGoal = 1 - Math.exp(-lam);
+  renderNextGoal(lam, pGoal);
+
+  if (!/^\d+-\d+$/.test(cur) || isNaN(L) || L <= 1) { out.innerHTML = '<div class="info-box">Enter the current score and its live lay price to preview a roll.</div>'; return; }
+
+  const { T, G, x } = rollStake(cur, L);
+  if (x <= 0.01) { out.innerHTML = `<div class="warn-box">${cur} is already at £${G.toFixed(2)} — at or past your £${T.toFixed(0)} target. No lay needed.</div>`; return; }
+
+  // which covered basket scores are still live and would gain?
+  const liveCovered = lastDutch.sel.filter(b => !isCatchAll(b.score) && reachable(b.score, cur) && b.score !== cur);
+  const goodRoll = liveCovered.length > 0;
+
+  // preview ladder = current position with this hypothetical lay applied
+  const previewAction = { score: cur, price: L, stake: x };
+  const ladder = buildLadder(cur, previewAction);
+
+  let advice;
+  if (!goodRoll) advice = `<div class="warn-box"><strong>No covered scores left above ${cur}.</strong> Laying just shifts green onto scores you haven't backed — this is an exit, not a roll. Consider cashing the position instead.</div>`;
+  else if (rollTarget !== 'be' && pGoal < 0.70) advice = `<div class="warn-box"><strong>Deep roll, thin odds.</strong> P(next goal) only ${(pGoal*100).toFixed(0)}%. You're taking ${cur} to £${T.toFixed(0)} — that liability is only recovered if another goal comes. Breakeven is the safer roll here.</div>`;
+  else advice = `<div class="info-box">Rolls green onto ${liveCovered.map(b=>b.score).join(', ')}. P(next goal) ${(pGoal*100).toFixed(0)}%. Liability on ${cur} only lost if it stays ${cur}.</div>`;
+
+  let htMsg = '';
+  if (elapsed >= 40 && elapsed < 46 && grossPnL('0-0') < 0 && cur === '0-0')
+    htMsg = `<div class="warn-box">⏱ Still 0-0 near HT — 54% of goals come after the break, so strip liability now rather than holding a losing 0-0 into the second half.</div>`;
+
+  out.innerHTML = `
+    <div class="roll-banner">LAY ${cur} @ ${L.toFixed(2)} — £${x.toFixed(2)}</div>
+    <div style="font-size:0.75rem;color:var(--muted);margin-bottom:10px;line-height:1.5;">
+      Takes ${cur} from £${G.toFixed(2)} to £${T.toFixed(0)} and adds ~£${(x*(1-comm)).toFixed(2)} net to every other outcome. Preview of your book if you apply it:
+    </div>
+    ${ladder}${advice}${htMsg}`;
+}
+
+// build the P&L ladder HTML; if previewAction given, include it as a hypothetical
+function buildLadder(cur, previewAction) {
+  const comm = lastDutch.comm;
+  const applied = previewAction ? [...tradeActions, previewAction] : tradeActions;
+  const gp = S => {
+    let p = lastDutch.sel.reduce((a,b) => a + (betWinsOn(b, S) ? b.stake * b.odds : 0), 0) - lastDutch.staked;
+    applied.forEach(act => { p += (act.score === S) ? -act.stake * (act.price - 1) : act.stake; });
+    return p;
+  };
+  // scores to show individually: basket explicit + any laid + current
+  const shown = [...new Set([
+    ...lastDutch.sel.filter(b => !isCatchAll(b.score)).map(b => b.score),
+    ...applied.map(a => a.score),
+    ...(cur && /^\d+-\d+$/.test(cur) ? [cur] : [])
+  ])];
+  // order by scoreline
+  shown.sort((a,b) => { const [ah,aa]=a.split('-').map(Number),[bh,ba]=b.split('-').map(Number); return (ah-bh)||(aa-ba); });
+
+  const catchAlls = lastDutch.sel.filter(b => isCatchAll(b.score));
+  let rows = shown.map(S => {
+    const g = gp(S), net = netOf(g, comm);
+    const dead = cur ? !reachable(S, cur) : false;
+    const backed = lastDutch.sel.some(b => b.score === S);
+    const isCur = S === cur;
+    return `<div class="stake-row ${dead?'dead-row':''}">
+      <div><div class="stake-name" style="font-size:1rem;${isCur?'color:var(--step4);':backed?'':'color:var(--muted);'}">${S}${isCur?' ◀ live':''}${backed?'':' ·'}</div>
+      ${dead?'<div style="font-size:0.62rem;color:var(--muted);">dead</div>':backed?'':'<div style="font-size:0.62rem;color:var(--muted);">uncovered</div>'}</div>
+      <div class="stake-amount" style="color:${net>0.005?'var(--green)':net<-0.005?'var(--red)':'var(--muted)'};">£${net.toFixed(2)}</div>
+    </div>`;
+  }).join('');
+
+  // "any other" bucket (a pure-uncovered, untouched score) — use a proxy score far outside the grid
+  const other = gp('9-9');
+  const otherNet = netOf(other, comm);
+  rows += `<div class="stake-row" style="border-style:dashed;">
+      <div><div class="stake-name" style="font-size:0.82rem;color:var(--muted);">any other reachable</div></div>
+      <div class="stake-amount" style="color:${otherNet>0.005?'var(--green)':otherNet<-0.005?'var(--red)':'var(--muted)'};">£${otherNet.toFixed(2)}</div>
+    </div>`;
+  catchAlls.forEach(b => {
+    const g = b.stake * b.odds - lastDutch.staked + applied.reduce((a,act)=>a+act.stake,0);
+    const net = netOf(g, comm);
+    rows += `<div class="stake-row" style="border-color:rgba(167,139,250,0.3);">
+      <div><div class="stake-name" style="font-size:0.82rem;color:#a78bfa;">${b.score}</div></div>
+      <div class="stake-amount" style="color:${net>0.005?'var(--green)':net<-0.005?'var(--red)':'var(--muted)'};">£${net.toFixed(2)}</div>
+    </div>`;
+  });
+  return rows;
+}
+
+function renderLive() {
+  if (!lastDutch) return;
+  const cur = document.getElementById('curScore').value.trim();
+  document.getElementById('liveLadder').innerHTML = buildLadder(cur || null, null);
+  const laid = totalLaid();
+  document.getElementById('posSummary').textContent = tradeActions.length ? `· ${tradeActions.length} lay${tradeActions.length>1?'s':''} applied, £${laid.toFixed(2)} laid` : '· pre-match book';
+}
+
+function applyRoll() {
+  if (!lastDutch) { alert('Stake the basket first.'); return; }
+  const cur = document.getElementById('curScore').value.trim();
+  const L = parseFloat(document.getElementById('layPrice').value);
+  if (!/^\d+-\d+$/.test(cur) || isNaN(L) || L <= 1) { alert('Enter a valid current score and lay price.'); return; }
+  const min = parseFloat(document.getElementById('elapsedMin').value) || 0;
+  const { x } = rollStake(cur, L);
+  if (x <= 0.01) { alert('No lay needed at this target.'); return; }
+  tradeActions.push({ score: cur, price: L, stake: Math.round(x*100)/100, minute: min });
+  laidScores = [...new Set(tradeActions.map(a => a.score))];
+  renderLive();
+  renderTradeLog();
+  document.getElementById('rollOut').innerHTML = `<div class="info-box">✔ Applied: lay ${cur} @ ${L.toFixed(2)} for £${x.toFixed(2)}. Position updated above. When the next goal lands, change the current score and repeat.</div>`;
+}
+
+function renderNextGoal(lam, p) {
+  const band = p >= 0.70 ? 'var(--green)' : p >= 0.5 ? 'var(--gold)' : 'var(--red)';
+  document.getElementById('nextGoalBox').innerHTML = `
+    <div style="background:var(--card2);border:1px solid var(--border);border-radius:11px;padding:10px 13px;">
+      <div style="display:flex;justify-content:space-between;font-family:'Barlow Condensed',sans-serif;font-size:0.82rem;">
+        <span style="color:var(--muted);">Remaining λ</span><span>${lam.toFixed(2)}</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;font-family:'Barlow Condensed',sans-serif;font-size:0.82rem;margin-top:3px;">
+        <span style="color:var(--muted);">P(≥1 more goal)</span><span style="color:${band};font-weight:700;">${(p*100).toFixed(0)}%</span>
+      </div>
+      ${timing ? '' : '<div style="font-size:0.68rem;color:var(--muted);margin-top:5px;">Using the 46/54 half-split fallback — run timing research in Step 2 for a sharper number.</div>'}
+    </div>`;
+}
+
+function renderTradeLog() {
+  const el = document.getElementById('tradeLog');
+  if (!tradeActions.length) { el.innerHTML = ''; return; }
+  let rows = tradeActions.map((a,i) => `<div style="display:flex;justify-content:space-between;font-family:'Barlow Condensed',sans-serif;font-size:0.8rem;padding:5px 3px;border-bottom:1px solid rgba(35,39,47,0.5);">
+    <span style="color:var(--muted);">${a.minute}′ &nbsp;lay ${a.score} @ ${a.price.toFixed(2)}</span><span style="color:var(--text);">£${a.stake.toFixed(2)}</span></div>`).join('');
+  el.innerHTML = `<div class="prompt-label">Trade log</div>${rows}`;
+}
+
+// ══════════════════════════════════════════
+// EXPORT
+// ══════════════════════════════════════════
+function getCurrentResult() {
+  const match = document.getElementById('exportMatch').value.trim() || 'Unknown';
+  const time = document.getElementById('exportTime').value.trim() || '--:--';
+  const covered = parseInt(document.getElementById('maxScores').textContent);
+  const staked = document.getElementById('effOdds').textContent;
+  const stake = document.getElementById('totalStake').value;
+  const target = window.targetScore || '';
+  const date = new Date().toLocaleDateString('en-GB');
+  const bets = (lastDutch?.sel || []).map(s => ({
+    name: s.score, odds: s.odds, amount: s.stake.toFixed(2), net: s.net.toFixed(2)
+  }));
+  const profit = bets.length ? Math.min(...(lastDutch.sel.map(s=>s.net))).toFixed(2) : '0.00';
+  return { date, match, time, target, covered, staked, stake, profit, bets, actions: tradeActions.slice() };
+}
+function exportCSV() {
+  const r = getCurrentResult();
+  if (!r.bets.length) { alert('No results to export'); return; }
+  const lines = [];
+  lines.push('Date,Match,Kick Off,Target Score,Base Stake,Scores In Basket,Total Staked,Min Net (pre-match)');
+  lines.push(`${r.date},${r.match},${r.time},${r.target},£${r.stake},${r.covered},${r.staked},£${r.profit}`);
+  lines.push('');
+  lines.push('Score,Odds,Stake,Net If It Lands (pre-match)');
+  r.bets.forEach(b => lines.push(`${b.name},${b.odds},£${b.amount},£${b.net}`));
+  if (r.actions.length) {
+    lines.push('');
+    lines.push('In-Play Lays,Minute,Lay Price,Stake');
+    r.actions.forEach(a => lines.push(`${a.score},${a.minute}',${a.price},£${a.stake.toFixed(2)}`));
+  }
+  const csv = lines.join('\r\n');
+  const filename = `score_dutch_${r.match.replace(/\s/g,'_')}_${r.date.replace(/\//g,'-')}.csv`;
+  try {
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.setAttribute('download', filename); a.style.display = 'none';
+    document.body.appendChild(a); a.click();
+    setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(url); }, 300);
+    saveToLog(r);
+    flash('export-flash', 'CSV downloaded', true);
+  } catch(e) {
+    window.open('data:text/csv;charset=utf-8,' + encodeURIComponent(csv), '_blank');
+    saveToLog(r);
+    flash('export-flash', 'Opened in new tab — save as .csv', true);
+  }
+}
+function copyForSheets() {
+  const r = getCurrentResult();
+  if (!r.bets.length) { alert('No results to export'); return; }
+  const lines = [];
+  lines.push('Date\tMatch\tKick Off\tTarget\tBase Stake\tScores\tTotal Staked\tMin Net');
+  lines.push(`${r.date}\t${r.match}\t${r.time}\t${r.target}\t£${r.stake}\t${r.covered}\t${r.staked}\t£${r.profit}`);
+  lines.push('');
+  lines.push('Score\tOdds\tStake\tNet If It Lands');
+  r.bets.forEach(b => lines.push(`${b.name}\t${b.odds}\t£${b.amount}\t£${b.net}`));
+  if (r.actions.length) {
+    lines.push('');
+    lines.push('In-Play Lays\tMinute\tLay Price\tStake');
+    r.actions.forEach(a => lines.push(`${a.score}\t${a.minute}'\t${a.price}\t£${a.stake.toFixed(2)}`));
+  }
+  const text = lines.join('\n');
+  const btn = document.getElementById('sheetsBtn');
+  const orig = btn.innerHTML;
+  const done = () => { btn.innerHTML = '✅ COPIED!'; btn.style.background = '#15803d'; setTimeout(() => { btn.innerHTML = orig; btn.style.background = '#1d4ed8'; }, 2000); };
+  if (navigator.clipboard?.writeText) navigator.clipboard.writeText(text).then(done);
+  else { const ta = document.createElement('textarea'); ta.value = text; ta.style.cssText='position:fixed;opacity:0'; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta); done(); }
+  saveToLog(r);
+  flash('export-flash', 'Paste straight into Google Sheets', true);
+}
+function saveToLog(r) {
+  savedResults.unshift(r);
+  if (savedResults.length > 50) savedResults.pop();
+  try { localStorage.setItem('score_dutch_results', JSON.stringify(savedResults)); } catch(e) {}
+}
+
+// ══════════════════════════════════════════
+// VISION SCAN
+// ══════════════════════════════════════════
+let betfairImageBase64 = null;
+let betfairImageBase64_2 = null;
+let imgMime1 = 'image/jpeg', imgMime2 = 'image/jpeg';
+
+function handleImageUpload(event, slot) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const dataUrl = e.target.result;
+    const mime = (dataUrl.match(/^data:(.*?);/) || [,'image/jpeg'])[1];
+    const b64 = dataUrl.split(',')[1];
+    if (slot === 1) {
+      betfairImageBase64 = b64; imgMime1 = mime;
+      document.getElementById('previewImg').src = dataUrl;
+      document.getElementById('imgPreview').style.display = 'block';
+      document.getElementById('uploadArea').style.borderColor = 'rgba(34,197,94,0.6)';
+    } else {
+      betfairImageBase64_2 = b64; imgMime2 = mime;
+      document.getElementById('previewImg2').src = dataUrl;
+      document.getElementById('imgPreview2').style.display = 'block';
+      document.getElementById('uploadArea2').style.borderColor = 'rgba(34,197,94,0.6)';
+    }
+    document.getElementById('scanBtn').style.display = 'block';
+  };
+  reader.readAsDataURL(file);
+}
+
+async function scanBetfairImage() {
+  if (!betfairImageBase64) return;
+  const btn = document.getElementById('scanBtn');
+  const status = document.getElementById('scanStatus');
+  btn.innerHTML = '⏳ &nbsp;SCANNING...';
+  btn.disabled = true;
+  const imgCount = betfairImageBase64_2 ? 2 : 1;
+  status.innerHTML = `<span style="color:var(--muted);">Reading ${imgCount} screenshot${imgCount>1?'s':''} from Betfair...</span>`;
+
+  const count = document.getElementById('numScores').value;
+  const xgPred = window.xgPredictedScore ? `The xG predicted score is ${window.xgPredictedScore}.` : '';
+  const apiKey = getApiKey();
+  if (!apiKey) {
+    status.innerHTML = '<span style="color:var(--red);">❌ No API key saved — enter your key at the top of the app first</span>';
+    btn.innerHTML = '⚡ &nbsp;RETRY SCAN'; btn.disabled = false;
+    return;
+  }
+
+  const extractPrompt = `You are reading Betfair Exchange screenshot(s). Extract ALL of the following and return as JSON only, no other text:
+{
+  "home_team": "team name or null",
+  "away_team": "team name or null",
+  "over25_back": number or null,
+  "under25_back": number or null,
+  "btts_yes_back": number or null,
+  "btts_no_back": number or null,
+  "correct_scores": [{"score": "H-A or label", "back_odds": number}]
+}
+For correct_scores include ALL scorelines shown across ALL screenshots including Any Other Home Win, Any Other Away Win, Any Other Draw. Merge scores from both images — no duplicates. Use back prices only. Return valid JSON only.`;
+
+  const imageContent = [{ type:'image', source:{ type:'base64', media_type: imgMime1, data: betfairImageBase64 } }];
+  if (betfairImageBase64_2) imageContent.push({ type:'image', source:{ type:'base64', media_type: imgMime2, data: betfairImageBase64_2 } });
+  imageContent.push({ type:'text', text:'Extract all odds data from these Betfair screenshots as JSON. Merge all correct scores from both images.' });
+
+  try {
+    const extractResponse = await fetch(API_URL, {
+      method:'POST', headers: API_HEADERS(apiKey),
+      body: JSON.stringify({ model: MODEL, max_tokens: 2000, system: extractPrompt, messages: [{ role:'user', content: imageContent }] })
+    });
+    const extractData = await extractResponse.json();
+    if (extractData.error) throw new Error(extractData.error.message);
+    const rawText = (extractData.content || []).filter(b => b.type === 'text').map(b => b.text).join('\n');
+
+    let extracted;
+    try {
+      const clean = rawText.replace(/```json|```/g,'').trim();
+      extracted = JSON.parse(clean.slice(clean.indexOf('{'), clean.lastIndexOf('}') + 1));
+    } catch(e) { throw new Error('Could not parse market data from screenshot'); }
+
+    let fieldsUpdated = [];
+    const fill = (id, val, label) => {
+      if (val && !document.getElementById(id).value) { document.getElementById(id).value = val; fieldsUpdated.push(label); }
+    };
+    fill('overOdds', extracted.over25_back, 'O2.5');
+    fill('bttsOdds', extracted.btts_yes_back, 'BTTS');
+    fill('homeTeam', extracted.home_team, 'Home team');
+    fill('awayTeam', extracted.away_team, 'Away team');
+    buildStep2Prompt();
+
+    const overO = parseFloat(document.getElementById('overOdds').value) || parseFloat(extracted.over25_back);
+    let goalInstr = '';
+    if (!isNaN(overO)) {
+      if (overO < 1.65) goalInstr = `CRITICAL: Over 2.5 odds are ${overO} — weight 3+ goal scorelines heavily. HIGH priority should be mostly 3+ goal scores.`;
+      else if (overO < 1.90) goalInstr = `Over 2.5 odds are ${overO} — lean toward 3+ goal scorelines for HIGH priority.`;
+      else if (overO < 2.20) goalInstr = `Over 2.5 odds are ${overO} — balance 2-goal and 3-goal scorelines across tiers.`;
+      else goalInstr = `Over 2.5 odds are ${overO} — low-scoring game. Prioritise 2 or fewer goals for HIGH priority.`;
+    }
+
+    const homeTeam = document.getElementById('homeTeam').value.trim() || extracted.home_team || 'Home Team';
+    const awayTeam = document.getElementById('awayTeam').value.trim() || extracted.away_team || 'Away Team';
+    const scoresJson = JSON.stringify(extracted.correct_scores || []);
+    const rankPrompt = `You are a football betting analyst. Rank these correct score back prices for ${homeTeam} vs ${awayTeam} from most to least likely. Rank primarily by Betfair back odds — shortest price is the highest priority. ${goalInstr} Treat goal volume as a tiebreaker, not an override. ${xgPred} Always include "Any Other Home Win" and/or "Any Other Away Win" if their back price is 15.0 or below — check the extracted scores list carefully for these. Return exactly ${count} scores, one per line, format: Score Odds Priority (HIGH/MED/LOW, top third HIGH, middle MED, bottom LOW). Return ONLY the list, no other text.`;
+
+    const rankResponse = await fetch(API_URL, {
+      method:'POST', headers: API_HEADERS(apiKey),
+      body: JSON.stringify({ model: MODEL, max_tokens: 800, system: rankPrompt, messages: [{ role:'user', content:`Rank these scores: ${scoresJson}` }] })
+    });
+    const rankData = await rankResponse.json();
+    if (rankData.error) throw new Error(rankData.error.message);
+    const rankText = (rankData.content || []).filter(b => b.type === 'text').map(b => b.text).join('\n');
+    if (!rankText.trim()) throw new Error('No ranking response');
+
+    let added = 0;
+    rankText.split('\n').forEach(line => {
+      const s = parseLine(line);
+      if (!s) return;
+      if (scores.some(x => x.score.toLowerCase() === s.score.toLowerCase())) return;
+      scores.push(s); added++;
+    });
+
+    if (added > 0) {
+      sortScores();
+      if (homeTeam && awayTeam) document.getElementById('exportMatch').value = `${homeTeam} v ${awayTeam}`;
+      let msg = `✅ ${added} scores loaded from ${imgCount} screenshot${imgCount>1?'s':''}`;
+      if (fieldsUpdated.length) msg += ` · Auto-filled: ${fieldsUpdated.join(', ')}`;
+      status.innerHTML = `<span style="color:var(--green);font-weight:700;">${msg} — scroll down to calculate!</span>`;
+      btn.innerHTML = '✅ &nbsp;SCANNED';
+      btn.style.background = '#15803d';
+      document.getElementById('body3').classList.add('open');
+      document.getElementById('chev3').classList.add('open');
+      setTimeout(() => document.querySelector('.scores-card').scrollIntoView({ behavior:'smooth', block:'start' }), 300);
+    } else throw new Error('Could not parse scores from response');
+
+  } catch(err) {
+    status.innerHTML = `<span style="color:var(--red);">❌ Scan failed — ${err.message}. Try the manual method instead.</span>`;
+    btn.innerHTML = '⚡ &nbsp;RETRY SCAN';
+    btn.disabled = false;
+    btn.style.background = 'var(--green)';
+  }
+}
+</script>
+</body>
+</html>
