@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0E1F1E">
+<title>Goal Lines</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ground:#0E1F1E; --raised:#152C2A; --edge:#23413E;
+  --bone:#EDE7DA; --muted:#87A29D;
+  --signal:#F2B441; --cool:#6FB3C9; --warm:#E2725B;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--ground);color:var(--bone);
+  font-family:Archivo,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+  font-variant-numeric:tabular-nums;-webkit-text-size-adjust:100%}
+body{padding:18px 16px 60px;max-width:520px;margin:0 auto}
+h1{font-size:.82rem;font-weight:500;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--muted);margin:0 0 18px}
+
+/* the reading */
+.reading{position:relative;padding:4px 0 14px;border-bottom:1px solid var(--edge)}
+.figure{display:flex;align-items:baseline;gap:10px}
+.big{font-size:5.2rem;font-weight:900;line-height:.86;letter-spacing:-.045em}
+.big.idle{color:var(--edge)}
+.unit{font-size:.95rem;font-weight:500;color:var(--muted);padding-bottom:.5rem}
+.method{font-size:.76rem;color:var(--muted);margin-top:9px;line-height:1.5;min-height:1.1em}
+
+/* distribution */
+.dist{display:flex;gap:3px;align-items:flex-end;height:74px;margin:18px 0 6px}
+.bar{flex:1;background:var(--edge);border-radius:3px 3px 0 0;position:relative;
+  transition:height .35s cubic-bezier(.2,.7,.3,1)}
+.bar.hot{background:var(--signal)}
+.bar span{position:absolute;bottom:-17px;left:0;right:0;text-align:center;
+  font-size:.66rem;color:var(--muted)}
+.bar b{position:absolute;top:-15px;left:0;right:0;text-align:center;
+  font-size:.6rem;font-weight:500;color:var(--muted)}
+.distnote{font-size:.72rem;color:var(--muted);margin:24px 0 0}
+
+/* inputs */
+.field{margin:16px 0 0}
+.field label{display:block;font-size:.74rem;color:var(--muted);margin-bottom:6px}
+input{width:100%;background:var(--raised);border:1px solid var(--edge);border-radius:11px;
+  color:var(--bone);font:700 1.35rem Archivo,sans-serif;font-variant-numeric:tabular-nums;
+  padding:13px 14px;outline:none}
+input:focus{border-color:var(--signal)}
+input::placeholder{color:#4A6663;font-weight:400}
+.row{display:flex;gap:9px}
+.row .field{flex:1}
+.row input{font-size:1.05rem;padding:11px 12px}
+
+details{margin-top:20px;border-top:1px solid var(--edge);padding-top:14px}
+summary{font-size:.78rem;color:var(--muted);cursor:pointer;list-style:none}
+summary::-webkit-details-marker{display:none}
+summary::after{content:" +";color:var(--signal)}
+details[open] summary::after{content:" −"}
+
+/* tables */
+table{width:100%;border-collapse:collapse;margin-top:14px;font-size:.86rem}
+th{text-align:right;font-size:.7rem;font-weight:500;color:var(--muted);
+  padding:0 0 7px;border-bottom:1px solid var(--edge)}
+th:first-child{text-align:left}
+td{padding:9px 0;border-bottom:1px solid rgba(35,65,62,.55);text-align:right}
+td:first-child{text-align:left;font-weight:700}
+.fair{color:var(--signal);font-weight:700}
+.pc{color:var(--muted)}
+.sec{margin-top:26px}
+.sec h2{font-size:.78rem;font-weight:500;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--muted);margin:0 0 2px}
+.hint{font-size:.72rem;color:var(--muted);line-height:1.55;margin:6px 0 0}
+.warn{color:var(--warm)}
+.empty{font-size:.8rem;color:var(--muted);line-height:1.6;margin-top:14px}
+.seg{display:flex;gap:6px;margin:12px 0 0}
+.seg button{flex:1;background:transparent;border:1px solid var(--edge);border-radius:9px;
+  color:var(--muted);font:500 .8rem Archivo,sans-serif;padding:9px 4px;cursor:pointer}
+.seg button.on{background:var(--signal);border-color:var(--signal);color:#0E1F1E;font-weight:700}
+.pill{display:flex;gap:7px;flex-wrap:wrap;margin-top:12px}
+.pill span{background:var(--raised);border:1px solid var(--edge);border-radius:8px;
+  padding:7px 11px;font-weight:700;font-size:.92rem}
+.pill span i{font-style:normal;font-weight:400;color:var(--muted);font-size:.78rem;margin-left:5px}
+.tot{display:flex;gap:18px;margin-top:14px;font-size:.82rem}
+.tot div b{display:block;font-size:1.4rem;font-weight:900;letter-spacing:-.02em}
+.tot div{color:var(--muted)}
+.pill span.ca{border-color:var(--cool);border-style:dashed}
+.pill span.ca i{color:var(--cool)}
+.verdict{font-weight:700;font-size:.78rem}
+.verdict.in{color:var(--signal)}
+.verdict.out{color:var(--muted)}
+.range{color:var(--cool);font-size:.72rem}
+.logline{font-size:.72rem;color:var(--cool);margin:10px 0 0;line-height:1.5}
+@media (prefers-reduced-motion:reduce){.bar{transition:none}}
+</style>
+</head>
+<body>
+
+<h1>Goal lines</h1>
+
+<div class="reading">
+  <div class="figure">
+    <div class="big idle" id="lam">—</div>
+    <div class="unit">goals<br>expected</div>
+  </div>
+  <div class="method" id="method">Enter the 0-0 price to read the market.</div>
+</div>
+
+<div class="dist" id="dist"></div>
+<p class="distnote" id="distnote"></p>
+
+<div class="field">
+  <label for="p00">0-0 back price</label>
+  <input id="p00" type="number" inputmode="decimal" step="0.1" placeholder="e.g. 27">
+</div>
+
+<details id="more">
+  <summary>Sharpen it — add what you can see</summary>
+
+  <div class="field">
+    <label for="o25">Over 2.5 back price — the most reliable single input</label>
+    <input id="o25" type="number" inputmode="decimal" step="0.01" placeholder="optional">
+  </div>
+
+  <div class="row">
+    <div class="field"><label for="oh">Home</label>
+      <input id="oh" type="number" inputmode="decimal" step="0.01" placeholder="1X2"></div>
+    <div class="field"><label for="od">Draw</label>
+      <input id="od" type="number" inputmode="decimal" step="0.01" placeholder=""></div>
+    <div class="field"><label for="oa">Away</label>
+      <input id="oa" type="number" inputmode="decimal" step="0.01" placeholder=""></div>
+  </div>
+
+  <div class="field">
+    <label for="btts">Both teams to score — yes</label>
+    <input id="btts" type="number" inputmode="decimal" step="0.01" placeholder="optional">
+  </div>
+
+  <div class="row">
+    <div class="field"><label for="aohw">Any other home win</label>
+      <input id="aohw" type="number" inputmode="decimal" step="0.1" placeholder="optional"></div>
+    <div class="field"><label for="aoaw">Any other away win</label>
+      <input id="aoaw" type="number" inputmode="decimal" step="0.1" placeholder="optional"></div>
+  </div>
+</details>
+
+<div class="sec">
+  <h2>Goal lines</h2>
+  <div id="lines"></div>
+</div>
+
+<div class="sec" id="scoresec" style="display:none">
+  <h2>Scorelines</h2>
+  <div id="scores"></div>
+  <p class="hint" id="splitnote"></p>
+</div>
+
+<div class="sec" id="casec" style="display:none">
+  <h2>Catch-alls</h2>
+  <div id="catchalls"></div>
+  <p class="hint" id="canote"></p>
+  <p class="logline" id="calog"></p>
+</div>
+
+<div class="sec" id="basketsec" style="display:none">
+  <h2>Basket</h2>
+  <div class="seg" id="modeSeg">
+    <button class="on" data-mode="likely">Most likely</button>
+    <button data-mode="band">Goal band</button>
+  </div>
+  <div class="seg" id="sizeSeg">
+    <button data-n="4">4</button><button data-n="5">5</button>
+    <button class="on" data-n="6">6</button><button data-n="7">7</button>
+    <button data-n="8">8</button>
+  </div>
+  <div id="basket"></div>
+  <p class="hint" id="basketnote"></p>
+</div>
+
+<script>
+const RHO = -0.10, MX = 10;
+const P = (k,l) => Math.exp(-l)*Math.pow(l,k)/fact(k);
+const F=[1];function fact(n){for(let i=F.length;i<=n;i++)F[i]=F[i-1]*i;return F[n];}
+
+function grid(lh,la){
+  const g=[];
+  for(let i=0;i<MX;i++){g[i]=[];for(let j=0;j<MX;j++)g[i][j]=P(i,lh)*P(j,la);}
+  g[0][0]*=1-lh*la*RHO; g[0][1]*=1+lh*RHO; g[1][0]*=1+la*RHO; g[1][1]*=1-RHO;
+  let t=0; for(let i=0;i<MX;i++)for(let j=0;j<MX;j++)t+=g[i][j];
+  for(let i=0;i<MX;i++)for(let j=0;j<MX;j++)g[i][j]/=t;
+  return g;
+}
+const totals = g => { const d=[]; for(let i=0;i<MX;i++)for(let j=0;j<MX;j++){d[i+j]=(d[i+j]||0)+g[i][j];} return d; };
+const over = (d,n) => d.reduce((s,p,k)=>k>n?s+p:s,0);
+
+// invert a quantity by bisection on total lambda, split evenly
+function solveTotal(target, fn){
+  let lo=0.3, hi=7.0;
+  for(let i=0;i<60;i++){
+    const m=(lo+hi)/2, v=fn(grid(m/2,m/2));
+    if(v<target) lo=m; else hi=m;
+  }
+  return (lo+hi)/2;
+}
+// P(0-0) falls as goals rise, so flip the comparison
+function totalFrom00(p00){
+  let lo=0.3, hi=7.0;
+  for(let i=0;i<60;i++){ const m=(lo+hi)/2; if(grid(m/2,m/2)[0][0] > p00) lo=m; else hi=m; }
+  return (lo+hi)/2;
+}
+function splitFor(total, pHome, pAway){
+  let lo=0.05, hi=0.95, best=0.5;
+  for(let i=0;i<40;i++){
+    const f=(lo+hi)/2, g=grid(total*f,total*(1-f));
+    let h=0,a=0;
+    for(let x=0;x<MX;x++)for(let y=0;y<MX;y++){ if(x>y)h+=g[x][y]; else if(y>x)a+=g[x][y]; }
+    if(h/(h+a) < pHome/(pHome+pAway)) lo=f; else hi=f;
+    best=f;
+  }
+  return best;
+}
+const num = id => { const v=parseFloat(document.getElementById(id).value); return (v>1.001)?v:null; };
+
+// Betfair lists 0-0 through 3-3 individually; everything else falls into a catch-all
+const LISTED = (i,j) => i<=3 && j<=3;
+function catchAlls(g){
+  let h=0,a=0,dr=0;
+  for(let i=0;i<MX;i++)for(let j=0;j<MX;j++){
+    if(LISTED(i,j)) continue;
+    if(i>j) h+=g[i][j]; else if(j>i) a+=g[i][j]; else dr+=g[i][j];
+  }
+  return {h:h,a:a,d:dr};
+}
+const COMM = 0.02;
+// back is +EV above this price
+const breakEven = p => 1 + (1-p)/(p*(1-COMM));
+// how far the catch-all price moves on a 0.2 error in its own lambda
+function caRange(lh,la,side,delta){
+  const out=[];
+  for(const dd of [-delta,delta]){
+    const g = side==='h' ? grid(Math.max(0.15,lh+dd),la) : grid(lh,Math.max(0.15,la+dd));
+    out.push(catchAlls(g)[side]);
+  }
+  return [Math.min(...out), Math.max(...out)];
+}
+
+function run(){
+  const p00=num('p00'), o25=num('o25'), oh=num('oh'), od=num('od'), oa=num('oa'), bt=num('btts');
+  const mHW=num('aohw'), mAW=num('aoaw');
+  const lamEl=document.getElementById('lam'), meth=document.getElementById('method');
+  let total=null, how='';
+
+  if(o25){
+    total = solveTotal(1/o25, g => over(totals(g),2));
+    how = p00 ? 'From over 2.5. ' : 'From over 2.5 alone. ';
+    if(p00){
+      const t2 = totalFrom00(1/p00);
+      const gap = Math.abs(t2-total);
+      how += gap>0.35
+        ? `<span class="warn">0-0 says ${t2.toFixed(2)} — a ${gap.toFixed(2)} gap, so one of the two prices is stale.</span>`
+        : `0-0 agrees at ${t2.toFixed(2)}.`;
+    }
+  } else if(p00){
+    total = totalFrom00(1/p00);
+    how = 'From the 0-0 price. Over 2.5 would tie this down harder — 0-0 is a single long price and moves a lot on small changes.';
+  }
+
+  if(total===null){
+    lamEl.textContent='—'; lamEl.classList.add('idle');
+    meth.textContent='Enter the 0-0 price to read the market.';
+    document.getElementById('dist').innerHTML='';
+    document.getElementById('distnote').textContent='';
+    document.getElementById('lines').innerHTML='<p class="empty">Goal lines appear once there is a price to read.</p>';
+    document.getElementById('scoresec').style.display='none';
+    document.getElementById('casec').style.display='none';
+    lastGrid=null; lastCA=null; drawBasket();
+    return;
+  }
+
+  lamEl.textContent=total.toFixed(2); lamEl.classList.remove('idle');
+  meth.innerHTML=how;
+
+  // split
+  let f=0.5, haveSplit=false;
+  if(oh&&od&&oa){
+    const inv=[1/oh,1/od,1/oa], s=inv[0]+inv[1]+inv[2];
+    f=splitFor(total, inv[0]/s, inv[2]/s); haveSplit=true;
+  }
+  const g=grid(total*f, total*(1-f)), d=totals(g);
+  const lamH=total*f, lamA=total*(1-f);
+  lastGrid=g; lastDist=d; lastLamH=lamH; lastLamA=lamA;
+
+  // distribution
+  const peak=Math.max(...d.slice(0,8));
+  document.getElementById('dist').innerHTML=d.slice(0,8).map((p,k)=>
+    `<div class="bar${p>peak*0.55?' hot':''}" style="height:${Math.max(3,(p/peak)*100)}%">
+       <b>${(p*100).toFixed(0)}</b><span>${k}${k===7?'+':''}</span></div>`).join('');
+  let best=null;
+  for(let i=0;i<6;i++){ const s=d[i]+d[i+1]; if(!best||s>best.p) best={lo:i,hi:i+1,p:s}; }
+  document.getElementById('distnote').innerHTML =
+    `Most likely landing on <strong>${best.lo} or ${best.hi} goals</strong> — ${(best.p*100).toFixed(0)}% between them.`;
+
+  // goal lines
+  const mkt={2:o25?1/o25:null};
+  document.getElementById('lines').innerHTML='<table><tr><th>Line</th><th>Over</th><th>Under</th><th>Market over</th></tr>'
+   + [0.5,1.5,2.5,3.5,4.5].map(L=>{
+      const o=over(d,Math.floor(L)), u=1-o;
+      const m=mkt[Math.floor(L)];
+      return `<tr><td>${L}</td><td class="fair">${(1/o).toFixed(2)}</td><td>${(1/u).toFixed(2)}</td>
+        <td class="pc">${m?(1/m).toFixed(2):'—'}</td></tr>`;
+    }).join('')+'</table>'
+   + `<p class="hint">Fair prices, no margin. You need better than the over column to have the edge${bt?'':''}.</p>`;
+
+  // scorelines
+  const sec=document.getElementById('scoresec');
+  if(haveSplit){
+    sec.style.display='';
+    const cells=[];
+    for(let i=0;i<5;i++)for(let j=0;j<5;j++)
+      if(LISTED(i,j)) cells.push({s:i+'-'+j,p:g[i][j],g:i+j});
+    cells.sort((a,b)=>b.p-a.p);
+    const top=cells.slice(0,8);
+    document.getElementById('scores').innerHTML='<table><tr><th>Score</th><th>Chance</th><th>Fair</th><th>Goals</th></tr>'
+      + top.map(c=>`<tr><td>${c.s}</td><td class="pc">${(c.p*100).toFixed(1)}%</td>
+          <td class="fair">${(1/c.p).toFixed(1)}</td><td class="pc">${c.g}</td></tr>`).join('')+'</table>';
+    const lh=(total*f), la=total*(1-f);
+    let note=`Split ${lh.toFixed(2)} – ${la.toFixed(2)} from the match odds.`;
+    if(bt){
+      let btts=0; for(let i=1;i<MX;i++)for(let j=1;j<MX;j++)btts+=g[i][j];
+      const gap=(btts-1/bt)*100;
+      note += Math.abs(gap)>4
+        ? ` <span class="warn">Both-teams-to-score disagrees: model ${(btts*100).toFixed(0)}% against the market's ${(100/bt).toFixed(0)}%. The split is probably wrong.</span>`
+        : ` Both-teams-to-score agrees at ${(btts*100).toFixed(0)}%.`;
+    }
+    document.getElementById('splitnote').innerHTML=note;
+  } else {
+    sec.style.display='';
+    document.getElementById('scores').innerHTML=
+      '<p class="empty">2.58 goals could be 1-2 or 3-0. Add the three match-odds prices above and this fills in.</p>';
+    document.getElementById('splitnote').textContent='';
+  }
+
+  // catch-alls
+  const caSec=document.getElementById('casec');
+  if(haveSplit){
+    caSec.style.display='';
+    const ca=catchAlls(g);
+    lastCA=[
+      {s:'Any other home win', short:'AOHW', p:ca.h, mkt:mHW, side:'h'},
+      {s:'Any other away win', short:'AOAW', p:ca.a, mkt:mAW, side:'a'}
+    ];
+    lastCA.forEach(c=>{
+      c.be = breakEven(c.p);
+      c.keep = !!(c.mkt && c.mkt >= c.be);
+      const r = caRange(lamH, lamA, c.side, 0.2);
+      c.lo = 1/r[1]; c.hi = 1/r[0];   // fair price range
+    });
+    document.getElementById('catchalls').innerHTML=
+      '<table><tr><th>Line</th><th>Chance</th><th>Fair</th><th>Needs</th><th>Yours</th><th></th></tr>'
+      + lastCA.map(c=>`<tr>
+          <td>${c.short}<br><span class="range">${c.lo.toFixed(1)}–${c.hi.toFixed(1)}</span></td>
+          <td class="pc">${(c.p*100).toFixed(1)}%</td>
+          <td class="fair">${(1/c.p).toFixed(1)}</td>
+          <td class="pc">${c.be.toFixed(1)}</td>
+          <td>${c.mkt?c.mkt.toFixed(1):'—'}</td>
+          <td class="verdict ${c.keep?'in':'out'}">${c.mkt?(c.keep?'KEEP':'DROP'):''}</td>
+        </tr>`).join('')+'</table>';
+    document.getElementById('canote').innerHTML =
+      `These cover everything outside the 0-0 to 3-3 board. <strong>Needs</strong> is the price that makes backing it break even after ${(COMM*100).toFixed(0)}% commission — enter what you can see and the verdict does the rest. `
+      + `The small figures under each name are the fair price if the lambda is out by 0.2 either way; the tail moves far more than the short scorelines do, which is why a catch-all can hold a place but should never be the line you are aiming at.`;
+    const logged = lastCA.filter(c=>c.mkt).map(c=>
+      `${c.short} model ${(c.p*100).toFixed(1)}% / market ${(100/c.mkt).toFixed(1)}% (${((c.p-1/c.mkt)*100>=0?'+':'')}${((c.p-1/c.mkt)*100).toFixed(1)}pt)`);
+    document.getElementById('calog').textContent = logged.length
+      ? 'For the log — '+logged.join('; ')+'.' : '';
+  } else {
+    caSec.style.display='none'; lastCA=null;
+  }
+
+  drawBasket();
+}
+let bMode='likely', bN=6, lastGrid=null, lastDist=null, lastCA=null, lastLamH=0, lastLamA=0;
+document.querySelectorAll('#modeSeg button').forEach(b=>b.onclick=()=>{
+  bMode=b.dataset.mode;
+  document.querySelectorAll('#modeSeg button').forEach(x=>x.classList.toggle('on',x===b));
+  drawBasket();
+});
+document.querySelectorAll('#sizeSeg button').forEach(b=>b.onclick=()=>{
+  bN=+b.dataset.n;
+  document.querySelectorAll('#sizeSeg button').forEach(x=>x.classList.toggle('on',x===b));
+  drawBasket();
+});
+
+function drawBasket(){
+  const sec=document.getElementById('basketsec');
+  if(!lastGrid){ sec.style.display='none'; return; }
+  sec.style.display='';
+  const g=lastGrid, d=lastDist;
+  let cells=[];
+  for(let i=0;i<6;i++)for(let j=0;j<6;j++)
+    if(LISTED(i,j)) cells.push({s:i+'-'+j,p:g[i][j],g:i+j,ca:false});
+  let band=null, leak=0;
+  if(bMode==='band'){
+    for(let i=0;i<6;i++){ const p=(d[i]||0)+(d[i+1]||0)+(d[i+2]||0);
+      if(!band||p>band.p) band={lo:i,hi:i+2,p}; }
+    cells=cells.filter(c=>c.g>=band.lo&&c.g<=band.hi);
+    // part of the band that only exists inside a catch-all, so cannot be bought on its own
+    for(let i=0;i<MX;i++)for(let j=0;j<MX;j++)
+      if(!LISTED(i,j) && i+j>=band.lo && i+j<=band.hi) leak+=g[i][j];
+  } else if(lastCA){
+    // a catch-all earns a place only if the price on screen clears its own break-even
+    lastCA.filter(c=>c.keep).forEach(c=>cells.push({s:c.short,p:c.p,g:null,ca:true}));
+  }
+  cells.sort((a,b)=>b.p-a.p);
+  const pick=cells.slice(0,bN);
+  // a catch-all can hold a place but must not sit at the head of the book
+  if(pick.length>1 && pick[0].ca){
+    const k=pick.findIndex(c=>!c.ca);
+    if(k>0){ const t=pick[0]; pick[0]=pick[k]; pick[k]=t; }
+  }
+  const cover=pick.reduce((t,c)=>t+c.p,0);
+  const fair=1/cover;
+  document.getElementById('basket').innerHTML='<div class="pill">'
+    + pick.map(c=>`<span class="${c.ca?'ca':''}">${c.s}<i>${(c.p*100).toFixed(1)}%</i></span>`).join('')
+    + '</div><div class="tot">'
+    + `<div>cover<b>${(cover*100).toFixed(1)}%</b></div>`
+    + `<div>fair combined<b>${fair.toFixed(3)}</b></div>`
+    + `<div>needs<b>${(fair*1.02).toFixed(3)}</b></div></div>`;
+  document.getElementById('basketnote').innerHTML =
+    (bMode==='band'
+      ? `Every line inside ${band.lo}\u2013${band.hi} goals, so it takes a view on how many rather than who wins. `
+      : `The ${bN} likeliest scorelines, wherever they fall. `)
+    + `Dutched equally, a fair book returns ${fair.toFixed(3)} and you lose the lot ${((1-cover)*100).toFixed(0)}% of the time. `
+    + `<strong>Real prices will be shorter than fair</strong> \u2014 if the dutch on your screen pays less than ${(fair*1.02).toFixed(3)} after commission, the book is costing you more than the cover is worth.`
+    + (pick.some(c=>c.ca)
+        ? ` <br><br>The dashed line is a catch-all, in because the price you entered beats its break-even. It is priced off the tail, so treat its share as the loosest part of the book.`
+        : '')
+    + (bMode==='band' && leak>0.004
+        ? ` <br><br><span class="warn">${(leak*100).toFixed(1)}% of this band sits inside the catch-alls</span> \u2014 scores like 4-0 fall inside the band but have no line of their own. Buying that slice means buying the whole catch-all, including the scores above the band.`
+        : '');
+}
+
+['p00','o25','oh','od','oa','btts','aohw','aoaw'].forEach(id=>
+  document.getElementById(id).addEventListener('input',run));
+run(); drawBasket();
+</script>
+</body>
+</html>
