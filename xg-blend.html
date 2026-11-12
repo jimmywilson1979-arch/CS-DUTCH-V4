@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0E1F1E">
+<title>xG Blend</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ground:#0E1F1E; --raised:#152C2A; --edge:#23413E;
+  --bone:#EDE7DA; --muted:#87A29D;
+  --signal:#F2B441; --cool:#6FB3C9; --warm:#E2725B; --good:#7CC08A;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--ground);color:var(--bone);
+  font-family:Archivo,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+  font-variant-numeric:tabular-nums;-webkit-text-size-adjust:100%}
+body{padding:18px 16px 60px;max-width:560px;margin:0 auto}
+h1{font-size:.82rem;font-weight:500;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin:0 0 4px}
+.sub{font-size:.74rem;color:var(--muted);margin:0 0 16px;line-height:1.5}
+h2{font-size:.72rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;margin:22px 0 2px}
+h2.home{color:var(--cool)} h2.away{color:var(--warm)} h2.lg{color:var(--signal)}
+.hint{font-size:.68rem;color:var(--muted);line-height:1.45;margin:2px 0 4px}
+
+/* the reading */
+.reading{padding:4px 0 14px;border-bottom:1px solid var(--edge)}
+.figure{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
+.big{font-size:3.6rem;font-weight:900;line-height:.9;letter-spacing:-.04em}
+.big.h{color:var(--cool)} .big.a{color:var(--warm)} .big.idle{color:var(--edge)}
+.dash{font-size:2rem;color:var(--muted);font-weight:500}
+.tot{font-size:.9rem;color:var(--muted);margin-left:auto}
+.tot b{color:var(--bone);font-size:1.3rem}
+.method{font-size:.74rem;color:var(--muted);margin-top:8px;line-height:1.5}
+
+table{width:100%;border-collapse:collapse;margin-top:12px;font-size:.8rem}
+th{font-weight:500;color:var(--muted);font-size:.66rem;letter-spacing:.06em;text-transform:uppercase;text-align:right;padding:4px 4px}
+th:first-child,td:first-child{text-align:left}
+td{padding:6px 4px;border-top:1px solid var(--edge);text-align:right}
+tr.on td{color:var(--signal);font-weight:700}
+
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
+.chip{background:var(--raised);border:1px solid var(--edge);border-radius:9px;padding:7px 9px;font-size:.78rem;flex:1 1 28%}
+.chip b{display:block;font-size:1rem}
+.chip small{color:var(--muted);font-size:.66rem}
+.chip.top{border-color:var(--signal)}
+
+.flags{margin-top:12px;font-size:.74rem;line-height:1.6;color:var(--muted)}
+.flags b{color:var(--bone)}
+.hi,.flags b.hi{color:var(--good)} .lo,.flags b.lo{color:var(--warm)}
+
+/* inputs */
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:8px 9px;margin-top:8px}
+.field label{display:block;font-size:.7rem;color:var(--muted);margin-bottom:4px}
+input,select{width:100%;background:var(--raised);border:1px solid var(--edge);border-radius:10px;
+  color:var(--bone);font:700 1.02rem Archivo,sans-serif;font-variant-numeric:tabular-nums;
+  padding:10px 11px;outline:none}
+select{font-size:.86rem;font-weight:500}
+input:focus,select:focus{border-color:var(--signal)}
+input::placeholder{color:#4A6663;font-weight:400}
+input.wide{grid-column:1/-1}
+
+.slider{margin-top:14px}
+.slider label{display:flex;justify-content:space-between;font-size:.74rem;color:var(--muted)}
+.slider label b{color:var(--signal);font-size:.9rem}
+input[type=range]{padding:0;border:none;background:transparent;accent-color:var(--signal);height:28px}
+
+.btns{display:flex;gap:8px;flex-wrap:wrap;margin-top:18px}
+button{background:var(--raised);border:1px solid var(--edge);border-radius:10px;color:var(--bone);
+  font:500 .78rem Archivo,sans-serif;padding:9px 12px;cursor:pointer}
+button.go{border-color:var(--signal);color:var(--signal)}
+#qrBox{display:none;text-align:center;margin-top:14px}
+#qrBox img{background:#fff;padding:10px;border-radius:10px;width:220px;height:220px}
+#qrBox div{font-size:.68rem;color:var(--muted);margin-top:6px;word-break:break-all}
+
+details{margin-top:22px;border-top:1px solid var(--edge);padding-top:14px}
+summary{font-size:.78rem;color:var(--muted);cursor:pointer;list-style:none}
+summary::-webkit-details-marker{display:none}
+summary::after{content:" +";color:var(--signal)}
+details[open] summary::after{content:" −"}
+.how{font-size:.74rem;color:var(--muted);line-height:1.6}
+.how code{color:var(--bone);font-size:.72rem}
+</style>
+</head>
+<body>
+
+<h1>xG Blend · pre-match λ</h1>
+<p class="sub">xG carries most of the weight; actual goals add what xG misses (finishing, keepers). Small samples are pulled toward the league average.</p>
+
+<div class="reading">
+  <div class="figure">
+    <span class="big h idle" id="oH">—</span><span class="dash">–</span><span class="big a idle" id="oA">—</span>
+    <span class="tot">total <b id="oT">—</b></span>
+  </div>
+  <div class="method" id="oMethod">Fill in the FootyStats figures below.</div>
+
+  <table id="cmp" style="display:none">
+    <thead><tr><th>Method</th><th>Home λ</th><th>Away λ</th><th>Total</th><th>Top score</th></tr></thead>
+    <tbody></tbody>
+  </table>
+
+  <div class="chips" id="topScores"></div>
+  <div class="chips" id="markets"></div>
+  <div class="flags" id="flags"></div>
+</div>
+
+<h2 class="lg">League</h2>
+<div class="hint">Average goals per game for home sides and away sides. Pick a preset or type your own.</div>
+<div class="grid">
+  <div class="field" style="grid-column:1/-1">
+    <select id="league"></select>
+  </div>
+  <div class="field"><label>Home goals avg</label><input type="number" id="lgH" step="0.01" placeholder="1.53"></div>
+  <div class="field"><label>Away goals avg</label><input type="number" id="lgA" step="0.01" placeholder="0.96"></div>
+</div>
+
+<h2 class="home">Home team — home column</h2>
+<div class="hint">From the team's FootyStats card, <b>Home</b> column only. MP from the league table.</div>
+<div class="grid">
+  <div class="field" style="grid-column:1/-1"><label>Team</label><input type="text" id="hName" placeholder="Deportivo Pasto" style="font-weight:500"></div>
+  <div class="field"><label>xG</label><input type="number" id="hXG" step="0.01" placeholder="1.35"></div>
+  <div class="field"><label>xGA</label><input type="number" id="hXGA" step="0.01" placeholder="1.25"></div>
+  <div class="field"><label>Scored</label><input type="number" id="hG" step="0.01" placeholder="1.00"></div>
+  <div class="field"><label>Conceded</label><input type="number" id="hGA" step="0.01" placeholder="0.95"></div>
+  <div class="field"><label>MP (all games)</label><input type="number" id="hMP" step="1" placeholder="39"></div>
+</div>
+
+<h2 class="away">Away team — away column</h2>
+<div class="hint">Same card for the away side, <b>Away</b> column only.</div>
+<div class="grid">
+  <div class="field" style="grid-column:1/-1"><label>Team</label><input type="text" id="aName" placeholder="Junior" style="font-weight:500"></div>
+  <div class="field"><label>xG</label><input type="number" id="aXG" step="0.01" placeholder="1.28"></div>
+  <div class="field"><label>xGA</label><input type="number" id="aXGA" step="0.01" placeholder="1.66"></div>
+  <div class="field"><label>Scored</label><input type="number" id="aG" step="0.01" placeholder="1.33"></div>
+  <div class="field"><label>Conceded</label><input type="number" id="aGA" step="0.01" placeholder="1.43"></div>
+  <div class="field"><label>MP (all games)</label><input type="number" id="aMP" step="1" placeholder="43"></div>
+</div>
+
+<h2 class="lg">Model dials</h2>
+<div class="slider"><label>a — weight on xG (rest on actual goals) <b id="aVal">0.70</b></label>
+  <input type="range" id="wA" min="0" max="1" step="0.05" value="0.7"></div>
+<div class="slider"><label>K — pull toward league avg (games' worth) <b id="kVal">6</b></label>
+  <input type="range" id="wK" min="0" max="20" step="1" value="6"></div>
+<div class="slider"><label>ρ — Dixon-Coles low-score tweak <b id="rVal">-0.10</b></label>
+  <input type="range" id="wR" min="-0.20" max="0.05" step="0.01" value="-0.10"></div>
+
+<div class="btns">
+  <button class="go" onclick="loadExample()">Load Pasto v Junior</button>
+  <button onclick="copyLambda()">Copy λ</button>
+  <button onclick="clearAll()">Clear</button>
+  <button onclick="toggleQR()">QR</button>
+</div>
+<div id="qrBox"><img id="qrImg" alt="QR code to open this page"><div id="qrUrl"></div></div>
+
+<details>
+  <summary>How it works</summary>
+  <div class="how">
+    <p><b>1. Blend.</b> <code>Att = a·xG + (1−a)·Scored</code>, <code>Def = a·xGA + (1−a)·Conceded</code>, using the home column for the home side and the away column for the away side.</p>
+    <p><b>2. Shrink.</b> <code>Att* = (n·Att + K·L) / (n + K)</code> with n = MP ÷ 2 (games at that venue). Home attack and away defence pull toward the league home average; away attack and home defence toward the away average. With K = 6, a team's own figures carry half the weight after 6 games at a venue, and more from there.</p>
+    <p><b>3. λ.</b> <code>λhome = Att*home × Def*away ÷ Lhome</code>, <code>λaway = Att*away × Def*home ÷ Laway</code> — the same split-divisor step as the app's xG path.</p>
+    <p><b>4. Scores.</b> Dixon-Coles grid with ρ, same maths as CS-DUTCH-V4.</p>
+    <p>The table shows <b>xG only</b> (a = 1, K = 0 — what the app does now), <b>goals only</b> and the <b>blend</b>, so you can see what the blend is moving. Finishing ratios far from 1.00 are where xG and reality disagree most.</p>
+    <p>a and K are starting values, not fitted ones. Log the blend λ against results and tune them later.</p>
+  </div>
+</details>
+
+<script>
+// League averages — actual goals per game, home / away.
+// Most are the long-run xG split from CS-DUTCH-V4's table (close enough to goals to start);
+// Colombia is 2026 actual goals (futbol24, 243 matches).
+const LEAGUES = {
+  "colombian primera a (2026)": [1.53, 0.96],
+  "dutch eredivisie": [1.73, 1.36], "german bundesliga": [1.71, 1.37], "swiss super league": [1.69, 1.36],
+  "norwegian eliteserien": [1.74, 1.30], "austrian bundesliga": [1.53, 1.36], "german bundesliga 2": [1.58, 1.30],
+  "danish superliga": [1.54, 1.32], "english premier league": [1.55, 1.27], "turkish super league": [1.58, 1.23],
+  "swedish allsvenskan": [1.54, 1.24], "italian serie a": [1.48, 1.25], "french ligue 1": [1.51, 1.21],
+  "scottish premiership": [1.50, 1.21], "polish ekstraklasa": [1.49, 1.15], "spanish la liga": [1.50, 1.13],
+  "croatian prima nl": [1.46, 1.17], "portuguese primeira liga": [1.45, 1.16], "english championship": [1.41, 1.13],
+  "italian serie b": [1.38, 1.07], "greek super league": [1.37, 1.08], "spanish segunda division": [1.33, 0.97]
+};
+const IDS = ['league','lgH','lgA','hName','hXG','hXGA','hG','hGA','hMP','aName','aXG','aXGA','aG','aGA','aMP','wA','wK','wR'];
+const $ = id => document.getElementById(id);
+const num = id => { const v = parseFloat($(id).value); return isNaN(v) ? null : v; };
+
+// ── maths (same Poisson / Dixon-Coles as index-3.html)
+function fact(n){ let r=1; for(let i=2;i<=n;i++) r*=i; return r; }
+function pois(k,l){ return Math.pow(l,k)*Math.exp(-l)/fact(k); }
+function tau(h,a,l,m,r){
+  if(h===0&&a===0) return 1 - l*m*r;
+  if(h===0&&a===1) return 1 + l*r;
+  if(h===1&&a===0) return 1 + m*r;
+  if(h===1&&a===1) return 1 - r;
+  return 1;
+}
+function buildDC(l,m,rho,mx){
+  mx = mx || 10; let M=[], s=0;
+  for(let h=0;h<=mx;h++){ M[h]=[]; for(let a=0;a<=mx;a++){ const p=pois(h,l)*pois(a,m)*tau(h,a,l,m,rho); M[h][a]=p; s+=p; } }
+  for(let h=0;h<=mx;h++) for(let a=0;a<=mx;a++) M[h][a]/=s;
+  return M;
+}
+function topScores(M, n){
+  const f=[]; for(let h=0;h<M.length;h++) for(let a=0;a<M.length;a++) f.push({s:h+'-'+a,p:M[h][a]});
+  return f.sort((x,y)=>y.p-x.p).slice(0,n);
+}
+function markets(M){
+  let H=0,D=0,A=0,o25=0,btts=0;
+  for(let h=0;h<M.length;h++) for(let a=0;a<M.length;a++){
+    const p=M[h][a]; if(h>a)H+=p; else if(h<a)A+=p; else D+=p;
+    if(h+a>2.5) o25+=p; if(h>0&&a>0) btts+=p;
+  }
+  return {H,D,A,o25,btts};
+}
+
+// ── the blend
+const blend  = (x,g,a) => a*x + (1-a)*g;
+const shrink = (v,n,L,K) => (n+K) > 0 ? (n*v + K*L)/(n+K) : v;
+function lambdas(d, a, K){
+  const hAtt = shrink(blend(d.hXG, d.hG,  a), d.hN, d.LH, K);
+  const hDef = shrink(blend(d.hXGA,d.hGA, a), d.hN, d.LA, K);  // conceded at home = away sides' scoring
+  const aAtt = shrink(blend(d.aXG, d.aG,  a), d.aN, d.LA, K);
+  const aDef = shrink(blend(d.aXGA,d.aGA, a), d.aN, d.LH, K);  // conceded away = home sides' scoring
+  return { lh: hAtt*aDef/d.LH, la: aAtt*hDef/d.LA, hAtt, hDef, aAtt, aDef };
+}
+
+const pct = p => (p*100).toFixed(1)+'%';
+const odds = p => p>0 ? (1/p).toFixed(2) : '—';
+let last = null;
+
+function run(){
+  $('aVal').textContent = (+$('wA').value).toFixed(2);
+  $('kVal').textContent = $('wK').value;
+  $('rVal').textContent = (+$('wR').value).toFixed(2);
+  save();
+
+  const d = { LH:num('lgH'), LA:num('lgA'),
+    hXG:num('hXG'), hXGA:num('hXGA'), hG:num('hG'), hGA:num('hGA'),
+    aXG:num('aXG'), aXGA:num('aXGA'), aG:num('aG'), aGA:num('aGA') };
+  const missing = Object.entries(d).filter(([k,v]) => v==null).map(([k])=>k);
+  const hMP = num('hMP'), aMP = num('aMP');
+  d.hN = hMP!=null ? hMP/2 : 0; d.aN = aMP!=null ? aMP/2 : 0;
+
+  if (missing.length || d.LH<=0 || d.LA<=0){
+    ['oH','oA'].forEach(i=>{ $(i).textContent='—'; $(i).classList.add('idle'); });
+    $('oT').textContent='—';
+    $('oMethod').textContent = missing.length ? `Still need: ${missing.length} figure${missing.length>1?'s':''}.` : 'League averages must be above zero.';
+    $('cmp').style.display='none'; $('topScores').innerHTML=''; $('markets').innerHTML=''; $('flags').innerHTML='';
+    last = null; return;
+  }
+
+  const a = +$('wA').value, K = +$('wK').value, rho = +$('wR').value;
+  const B = lambdas(d, a, K);
+  const X = lambdas(d, 1, 0);
+  const G = lambdas(d, 0, 0);
+  const M = buildDC(B.lh, B.la, rho);
+  last = B;
+
+  $('oH').textContent = B.lh.toFixed(2); $('oA').textContent = B.la.toFixed(2);
+  ['oH','oA'].forEach(i=>$(i).classList.remove('idle'));
+  $('oT').textContent = (B.lh+B.la).toFixed(2);
+  const hn = $('hName').value.trim() || 'Home', an = $('aName').value.trim() || 'Away';
+  $('oMethod').innerHTML = `${hn} v ${an} · a ${a.toFixed(2)} · K ${K} · n ${d.hN.toFixed(1)} / ${d.aN.toFixed(1)}`
+    + ((hMP==null||aMP==null) ? ' · <span class="lo">no MP entered, so no pull to the league average</span>' : '');
+
+  const rows = [['xG only',X],['Goals only',G],['Blend',B]].map(([lab,L])=>{
+    const t = topScores(buildDC(L.lh,L.la,rho),1)[0];
+    return `<tr class="${lab==='Blend'?'on':''}"><td>${lab}</td><td>${L.lh.toFixed(2)}</td><td>${L.la.toFixed(2)}</td><td>${(L.lh+L.la).toFixed(2)}</td><td>${t.s}</td></tr>`;
+  }).join('');
+  $('cmp').querySelector('tbody').innerHTML = rows; $('cmp').style.display='';
+
+  $('topScores').innerHTML = topScores(M,6).map((t,i)=>
+    `<div class="chip ${i===0?'top':''}"><b>${t.s}</b>${pct(t.p)}<br><small>fair ${odds(t.p)}</small></div>`).join('');
+
+  const m = markets(M);
+  $('markets').innerHTML = [['Home',m.H],['Draw',m.D],['Away',m.A],['O2.5',m.o25],['BTTS',m.btts]]
+    .map(([k,p])=>`<div class="chip"><small>${k}</small><b>${odds(p)}</b><small>${pct(p)}</small></div>`).join('');
+
+  const ratio = (g,x,attack) => {
+    if(!x) return '—';
+    const r = g/x, cls = Math.abs(r-1)<0.12 ? '' : ((attack ? r>1 : r<1) ? 'hi' : 'lo');
+    return `<b class="${cls}">${r.toFixed(2)}</b>`;
+  };
+  $('flags').innerHTML =
+    `Finishing (scored ÷ xG): ${hn} ${ratio(d.hG,d.hXG,true)} · ${an} ${ratio(d.aG,d.aXG,true)}<br>`
+  + `Keeping (conceded ÷ xGA): ${hn} ${ratio(d.hGA,d.hXGA,false)} · ${an} ${ratio(d.aGA,d.aXGA,false)}<br>`
+  + `<span style="font-size:.68rem">Green = beating xG, red = falling short. Further from 1.00 = the blend moves λ more.</span>`;
+}
+
+// ── storage (per-browser convenience only)
+function save(){ try{ const o={}; IDS.forEach(i=>o[i]=$(i).value); localStorage.setItem('xgBlend',JSON.stringify(o)); }catch(e){} }
+function restore(){ try{ const o=JSON.parse(localStorage.getItem('xgBlend')||'null'); if(o) IDS.forEach(i=>{ if(o[i]!=null) $(i).value=o[i]; }); }catch(e){} }
+
+function loadExample(){
+  const v = { league:'colombian primera a (2026)', lgH:1.53, lgA:0.96,
+    hName:'Deportivo Pasto', hXG:1.35, hXGA:1.25, hG:1.00, hGA:0.95, hMP:39,
+    aName:'Junior', aXG:1.28, aXGA:1.66, aG:1.33, aGA:1.43, aMP:43 };
+  Object.entries(v).forEach(([k,x])=>$(k).value=x); run();
+}
+function clearAll(){
+  ['hName','hXG','hXGA','hG','hGA','hMP','aName','aXG','aXGA','aG','aGA','aMP'].forEach(i=>$(i).value='');
+  run();
+}
+function copyLambda(){
+  if(!last) return;
+  const t = `${last.lh.toFixed(2)} ${last.la.toFixed(2)}`;
+  (navigator.clipboard ? navigator.clipboard.writeText(t) : Promise.reject()).catch(()=>{});
+}
+function toggleQR(){
+  const b=$('qrBox'); const on = b.style.display!=='block';
+  b.style.display = on ? 'block' : 'none';
+  if(on){ const u=location.href.split('#')[0];
+    $('qrImg').src='https://api.qrserver.com/v1/create-qr-code/?size=400x400&margin=0&data='+encodeURIComponent(u);
+    $('qrUrl').textContent=u; }
+}
+
+// ── wiring
+(function init(){
+  const sel=$('league');
+  sel.innerHTML = '<option value="">League preset…</option>' +
+    Object.keys(LEAGUES).map(k=>`<option value="${k}">${k.replace(/\b\w/g,c=>c.toUpperCase())}</option>`).join('');
+  sel.addEventListener('change',()=>{ const L=LEAGUES[sel.value]; if(L){ $('lgH').value=L[0]; $('lgA').value=L[1]; } run(); });
+  restore();
+  IDS.forEach(i=>$(i).addEventListener('input',run));
+  run();
+})();
+</script>
+</body>
+</html>
