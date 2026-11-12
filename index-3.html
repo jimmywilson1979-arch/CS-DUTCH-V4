@@ -635,6 +635,54 @@ textarea:focus { border-color: var(--step3); }
           <input type="number" id="awayXGA" placeholder="1.30" step="0.01" oninput="buildStep2Prompt(); clearTimeout(window._xgT); window._xgT=setTimeout(()=>{try{compareBaskets();}catch(e){}},350);">
         </div>
       </div>
+    <details id="blendBox" style="margin-top:8px;">
+      <summary style="font-family:'Barlow Condensed',sans-serif;font-size:0.72rem;font-weight:700;letter-spacing:0.08em;color:#8b5cf6;text-transform:uppercase;cursor:pointer;">
+        ➕ Actual goals for BLEND λ <span style="font-size:0.65rem;color:var(--muted);font-weight:400;letter-spacing:0.02em;text-transform:none;">— optional, same FootyStats card</span>
+      </summary>
+      <div class="filter-row" style="margin-top:6px;">
+        <div class="filter-group">
+          <label>Home scored <span style="font-size:0.65rem;color:#4b5563;">(home games)</span></label>
+          <input type="number" id="homeGF" placeholder="1.00" step="0.01" oninput="buildStep2Prompt()">
+        </div>
+        <div class="filter-group">
+          <label>Home conceded <span style="font-size:0.65rem;color:#4b5563;">(home games)</span></label>
+          <input type="number" id="homeGA" placeholder="0.95" step="0.01" oninput="buildStep2Prompt()">
+        </div>
+      </div>
+      <div class="filter-row">
+        <div class="filter-group">
+          <label>Away scored <span style="font-size:0.65rem;color:#4b5563;">(away games)</span></label>
+          <input type="number" id="awayGF" placeholder="1.33" step="0.01" oninput="buildStep2Prompt()">
+        </div>
+        <div class="filter-group">
+          <label>Away conceded <span style="font-size:0.65rem;color:#4b5563;">(away games)</span></label>
+          <input type="number" id="awayGA" placeholder="1.43" step="0.01" oninput="buildStep2Prompt()">
+        </div>
+      </div>
+      <div class="filter-row">
+        <div class="filter-group">
+          <label>Home MP <span style="font-size:0.65rem;color:#4b5563;">(league table)</span></label>
+          <input type="number" id="homeMP" placeholder="39" step="1" oninput="buildStep2Prompt()">
+        </div>
+        <div class="filter-group">
+          <label>Away MP <span style="font-size:0.65rem;color:#4b5563;">(league table)</span></label>
+          <input type="number" id="awayMP" placeholder="43" step="1" oninput="buildStep2Prompt()">
+        </div>
+      </div>
+      <div class="filter-row">
+        <div class="filter-group">
+          <label>a — weight on xG</label>
+          <input type="number" id="blendA" value="0.70" min="0" max="1" step="0.05" oninput="buildStep2Prompt()">
+        </div>
+        <div class="filter-group">
+          <label>K — pull to league avg</label>
+          <input type="number" id="blendK" value="6" min="0" max="30" step="1" oninput="buildStep2Prompt()">
+        </div>
+      </div>
+      <div style="font-size:0.67rem;color:var(--muted);line-height:1.5;">
+        Att = a·xG + (1−a)·scored, Def = a·xGA + (1−a)·conceded, then pulled toward the league home/away average by K games' worth (n = MP ÷ 2). Same divisors as the xG path. Pick <strong style="color:var(--text);">BLEND</strong> in the λ panel to price off it.
+      </div>
+    </details>
     <div id="leagueAvgNote" style="font-size:0.68rem;margin-top:5px;line-height:1.5;"></div>
     <div style="font-size:0.67rem;color:var(--muted);margin-top:2px;line-height:1.5;">
       Home figures from the team's home games, away from away games. Get these the wrong way round and the whole fit breaks — the λ panel will tell you if they look swapped.
@@ -1331,6 +1379,7 @@ function importBackup(ev) {
 // ══════════════════════════════════════════
 const HANDOFF_FIELDS = ['homeTeam','awayTeam','homeOdds','drawOdds','awayOdds','overOdds','bttsOdds','over35Odds','over45Odds','fh05Odds',
                         'homeXG','homeXGA','awayXG','awayXGA','rhoInput','leagueAvg',
+                        'homeGF','homeGA','awayGF','awayGA','homeMP','awayMP','blendA','blendK',
                         'totalStake','reserveStake','commission','targetScore','numScores'];
 
 function b64urlEncode(str) {
@@ -1547,8 +1596,33 @@ function modelP(label){
 // with the team news, and they are internally consistent: 1X2 fixes the SPLIT,
 // Over/Under fixes the TOTAL, BTTS and the higher Over lines fix the SHAPE.
 // Two unknowns, four-plus equations — so solve for λ instead of trusting a feed.
-let lambdaSource = 'market';        // market | xg
+let lambdaSource = 'market';        // market | xg | blend
 let lastFit = null;
+let lastBlend = null;               // { lh, la } when the BLEND path has enough inputs
+
+// ── BLEND λ (v1)
+// xG with actual goals mixed in, then pulled toward the league average by sample size.
+//   Att = a·xG + (1−a)·scored     Def = a·xGA + (1−a)·conceded
+//   Att* = (n·Att + K·L)/(n + K)   n = MP/2 (games at that venue)
+//   λH = Att*H · Def*A / lgH       λA = Att*A · Def*H / lgA
+// Home attack and away defence pull toward lgH; away attack and home defence toward lgA.
+// a and K are starting guesses (0.7 / 6), not fitted — tune once results are logged.
+function blendLambda(lgH, lgA){
+  const g = id => { const v = parseFloat(document.getElementById(id).value); return isNaN(v) ? null : v; };
+  const hXG=g('homeXG'), hXGA=g('homeXGA'), aXG=g('awayXG'), aXGA=g('awayXGA'),
+        hGF=g('homeGF'), hGA=g('homeGA'), aGF=g('awayGF'), aGA=g('awayGA');
+  if ([hXG,hXGA,aXG,aXGA,hGF,hGA,aGF,aGA].some(v => v == null) || !(lgH > 0) || !(lgA > 0)) return null;
+  const a = Math.min(1, Math.max(0, g('blendA') ?? 0.7));
+  const K = Math.max(0, g('blendK') ?? 6);
+  const hN = (g('homeMP') || 0)/2, aN = (g('awayMP') || 0)/2;
+  const mix = (x, y) => a*x + (1-a)*y;
+  const pull = (v, n, L) => (n + K) > 0 ? (n*v + K*L)/(n + K) : v;
+  const hAtt = pull(mix(hXG,  hGF), hN, lgH);
+  const hDef = pull(mix(hXGA, hGA), hN, lgA);
+  const aAtt = pull(mix(aXG,  aGF), aN, lgA);
+  const aDef = pull(mix(aXGA, aGA), aN, lgH);
+  return { lh: hAtt*aDef/lgH, la: aAtt*hDef/lgA, a, K, noMP: !(hN > 0 && aN > 0) };
+}
 
 // Shin de-vig — removes the book's margin assuming a share of insider money,
 // rather than scaling every price by the same factor the way normalisation does.
@@ -1638,7 +1712,7 @@ function fitMarketLambda(){
 }
 
 // side-by-side: what the prices say, what the xG feed says, and whether they agree
-function renderLambdaFit(fit, xgLH, xgLA, useMarket){
+function renderLambdaFit(fit, xgLH, xgLA, useMarket, blend, useBlend){
   const box = document.getElementById('lambdaFit');
   if(!box) return;
   if(!fit && !(xgLH!=null)){ box.innerHTML=''; return; }
@@ -1679,13 +1753,14 @@ function renderLambdaFit(fit, xgLH, xgLA, useMarket){
   box.innerHTML = `<div style="background:rgba(59,130,246,0.06);border:1px solid rgba(59,130,246,0.28);border-radius:11px;padding:10px 12px;">
     <div style="display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin-bottom:5px;">
       <span style="font-family:'Barlow Condensed',sans-serif;font-size:0.68rem;font-weight:700;letter-spacing:0.1em;color:#60a5fa;text-transform:uppercase;">λ from the market</span>
-      ${btn('market','MARKET', useMarket)}${btn('xg','xG', !useMarket)}
+      ${btn('market','MARKET', useMarket)}${btn('xg','xG', !useMarket && !useBlend)}${blend?btn('blend','BLEND', !!useBlend):''}
     </div>
     ${fit ? `<div style="font-family:'Barlow Condensed',sans-serif;font-size:1.15rem;font-weight:900;color:var(--text);">${fit.lh.toFixed(2)} – ${fit.la.toFixed(2)}
        <span style="font-size:0.72rem;font-weight:400;color:var(--muted);">ρ ${fit.rho.toFixed(2)} · ${fit.used} markets · rms ${(fit.rms*100).toFixed(2)}pp</span></div>
      <div style="font-size:0.68rem;color:var(--muted);margin-top:3px;font-family:'Barlow Condensed',sans-serif;">model/market: ${resid}</div>`
-     : `<div style="font-size:0.72rem;color:var(--muted);">Need 1X2 plus at least one of O2.5 / O3.5 / BTTS to solve. Running on xG.</div>`}
+     : `<div style="font-size:0.72rem;color:var(--muted);">Need 1X2 plus at least one of O2.5 / O3.5 / BTTS to solve. Running on ${useBlend?'BLEND':'xG'}.</div>`}
     ${agreeTxt?`<div style="font-size:0.7rem;margin-top:5px;">${agreeTxt}</div>`:''}
+    ${blend?`<div style="font-size:0.7rem;margin-top:5px;color:${useBlend?'var(--green)':'var(--muted)'};">Blend (a ${blend.a.toFixed(2)}, K ${blend.K}): <strong style="color:var(--text);">${blend.lh.toFixed(2)} – ${blend.la.toFixed(2)}</strong> (${(blend.lh+blend.la).toFixed(2)} goals)${xgLH!=null?` · xG only ${xgLH.toFixed(2)} – ${xgLA.toFixed(2)}`:''}${fit?` · market ${fit.lh.toFixed(2)} – ${fit.la.toFixed(2)}`:''}${blend.noMP?' · <span style="color:var(--gold);">no MP entered, no pull to league avg</span>':''}</div>`:''}
     ${(()=>{ const fh=firstHalfShare(); if(!fh) return '';
       const d=(fh.share-fh.base)*100;
       return `<div style="font-size:0.7rem;margin-top:5px;color:${Math.abs(d)>4?'var(--gold)':'var(--muted)'};">
@@ -1888,12 +1963,15 @@ function buildStep2Prompt() {
   const lgA = (window.leagueAvgAway > 0) ? window.leagueAvgAway : leagueAvgXG;
   const xgLH = xgOK ? homeXG * (awayXGA / lgH) : null;
   const xgLA = xgOK ? awayXG * (homeXGA / lgA) : null;
-  const useMarket = lastFit && lambdaSource === 'market';
-  renderLambdaFit(lastFit, xgLH, xgLA, useMarket);
+  lastBlend = xgOK ? blendLambda(lgH, lgA) : null;
+  const useMarket = !!lastFit && lambdaSource === 'market';
+  const useBlend  = !useMarket && !!lastBlend && lambdaSource === 'blend';
+  window.lambdaUsedSource = useMarket ? 'market' : useBlend ? 'blend' : 'xg';
+  renderLambdaFit(lastFit, xgLH, xgLA, useMarket, lastBlend, useBlend);
 
   if (useMarket || xgOK) {
-    const homeExpected = useMarket ? lastFit.lh : xgLH;
-    const awayExpected = useMarket ? lastFit.la : xgLA;
+    const homeExpected = useMarket ? lastFit.lh : useBlend ? lastBlend.lh : xgLH;
+    const awayExpected = useMarket ? lastFit.la : useBlend ? lastBlend.la : xgLA;
     const rhoUsed      = useMarket ? lastFit.rho : rho;
     window.lambdaHome = homeExpected;
     window.lambdaAway = awayExpected;
@@ -4460,7 +4538,7 @@ function captureTrade(){
     date: new Date().toISOString().slice(0,10),
     match: document.getElementById('matchName').value || '(unnamed)',
     // what the model said
-    lambdaSource: lastFit ? (lambdaSource === 'market' ? 'market' : 'xg') : 'xg',
+    lambdaSource: window.lambdaUsedSource || (lastFit && lambdaSource === 'market' ? 'market' : 'xg'),
     lh: lastFit ? +lastFit.lh.toFixed(2) : null,
     la: lastFit ? +lastFit.la.toFixed(2) : null,
     rho: lastFit ? +lastFit.rho.toFixed(3) : null,
